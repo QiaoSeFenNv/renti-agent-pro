@@ -1,0 +1,51 @@
+{
+  "workspace": {
+    "defaultListingPageSize": 10,
+    "listingPageSizeOptions": [10],
+    "modelOptions": [
+      {
+        "value": "deep",
+        "label": "RentAI Deep",
+        "description": "更重视解释与风险提示，适合做最终决策。",
+        "enabled": true
+      }
+    ]
+  },
+  "system_integrations": {
+    "llm": {
+      "deepseekApiKey": "YOUR_DEEPSEEK_API_KEY_HERE",
+      "deepseekBaseUrl": "https://api.deepseek.com",
+      "deepseekChatModel": "deepseek-v4-pro",
+      "deepseekTimeoutSeconds": 30.0
+    },
+    "rag": {
+      "embeddingProvider": "auto",
+      "jinaUrl": "https://api.jina.ai/v1/embeddings",
+      "jinaApiKey": "YOUR_JINA_API_KEY_HERE",
+      "jinaModel": "jina-embeddings-v3",
+      "qdrantUrl": "YOUR_QDRANT_CLUSTER_URL_HERE",
+      "qdrantApiKey": "YOUR_QDRANT_API_KEY_HERE",
+      "qdrantCollection": "renti_listings_v2_jina",
+      "localEmbeddingDimensions": 384,
+      "candidatePoolMultiplier": 4,
+      "mqeEnabled": false,
+      "mqeQueryCount": 3,
+      "hydeEnabled": false,
+      "llmRerankEnabled": false,
+      "llmRerankTopN": 12,
+      "queryExpansionProvider": "local",
+      "proxyUrl": "http://127.0.0.1:7897",
+      "timeoutSeconds": 15.0
+    },
+    "neo4j": {
+      "url": "YOUR_NEO4J_URI_HERE",
+      "username": "YOUR_NEO4J_USERNAME_HERE",
+      "apiKey": "YOUR_NEO4J_PASSWORD_HERE",
+      "database": "neo4j",
+      "transport": "http",
+      "proxyUrl": "http://127.0.0.1:7897",
+      "insecureSkipVerify": true,
+      "timeoutSeconds": 15.0
+    }
+  }
+}

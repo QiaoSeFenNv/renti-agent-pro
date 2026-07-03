@@ -1,0 +1,68 @@
+spring:
+  application:
+    name: renti-agent-backend
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://127.0.0.1:55432/renti_agent_v2}
+    username: ${DATABASE_USERNAME:renti}
+    password: ${DATABASE_PASSWORD:}
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 5000
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Shanghai
+  jackson:
+    default-property-inclusion: non_null
+    time-zone: Asia/Shanghai
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+logging:
+  level:
+    com.renti.agent: INFO
+
+renti:
+  cors:
+    allowed-origins:
+      - http://localhost:5173
+      - http://127.0.0.1:5173
+  security:
+    cookie-secure: false
+    session-ttl-seconds: 604800
+    admin-session-ttl-seconds: 43200
+    internal-token: ${RENTI_INTERNAL_TOKEN:renti-internal-dev-token}
+  agent:
+    base-url: ${AGENT_SERVICE_URL:http://127.0.0.1:8001}
+    timeout-seconds: 120
+  amap:
+    web-service-key: ${AMAP_WEB_SERVICE_KEY:}
+    base-url: https://restapi.amap.com
+  deepseek:
+    api-key: ${DEEPSEEK_API_KEY:}
+    base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
+    chat-model: ${DEEPSEEK_CHAT_MODEL:deepseek-chat}
+  qdrant:
+    url: ${QDRANT_URL:}
+    api-key: ${QDRANT_API_KEY:}
+    collection: ${QDRANT_COLLECTION:renti_listings_v2}
+  jina:
+    url: ${JINA_URL:https://api.jina.ai/v1/embeddings}
+    api-key: ${JINA_APIKEY:}
+    model: ${JINA_MODEL:jina-embeddings-v3}
+  neo4j:
+    uri: ${NEO4J_URI:}
+    username: ${NEO4J_USERNAME:}
+    password: ${NEO4J_PASSWORD:}
+    database: ${NEO4J_DATABASE:neo4j}
+    proxy-url: ${NEO4J_PROXY_URL:}
+    insecure-skip-verify: ${NEO4J_INSECURE_SKIP_VERIFY:false}

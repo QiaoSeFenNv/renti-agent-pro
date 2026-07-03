@@ -1,0 +1,8 @@
+target/
+*.log
+.idea/
+*.iml
+agent-service/.venv/
+agent-service/__pycache__/
+agent-service/**/__pycache__/
+agent-service/.env.local

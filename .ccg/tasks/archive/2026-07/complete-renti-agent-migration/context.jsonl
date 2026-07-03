@@ -1,0 +1,9 @@
+{"path":"C:/Files/Rentti/Task.md","role":"requirements"}
+{"path":"C:/Files/Rentti/renti-agent/docs/developer-manual.md","role":"old-feature-reference"}
+{"path":"C:/Files/Rentti/renti-agent/backend/app/main.py","role":"old-api-reference"}
+{"path":"C:/Files/Rentti/renti-agent/frontend/src/pages/AdminPage.vue","role":"old-admin-reference"}
+{"path":"C:/Files/Rentti/renti-agent-backend/src/main/java/com/renti/agent/modules/admin/api/AdminController.java","role":"backend-implementation"}
+{"path":"C:/Files/Rentti/renti-agent-backend/src/main/java/com/renti/agent/modules/user/application/UserWorkspaceService.java","role":"backend-implementation"}
+{"path":"C:/Files/Rentti/renti-agent-backend/src/main/java/com/renti/agent/modules/listing/api/CompatibilityController.java","role":"backend-implementation"}
+{"path":"C:/Files/Rentti/renti-agent-front/src/pages/AdminPage.jsx","role":"frontend-implementation"}
+{"path":"C:/Files/Rentti/renti-agent-front/src/pages/CityPage.jsx","role":"frontend-implementation"}

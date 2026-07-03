@@ -1,0 +1,12 @@
+{
+  "id": "complete-renti-agent-migration",
+  "title": "Complete old renti-agent feature migration into React frontend, Spring Boot backend, and Python Agent service",
+  "status": "completed",
+  "complexity": "L+",
+  "risk": "high",
+  "domain": "fullstack",
+  "currentPhase": "completed",
+  "nextAction": "Archived after local verification",
+  "createdAt": "2026-07-02T16:34:09+08:00",
+  "branch": "unknown"
+}

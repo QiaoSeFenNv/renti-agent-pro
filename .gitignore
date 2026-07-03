@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+target/
+.m2/
+
+# Logs
+*.log
+*.log.*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# Build
+dist/
+build/
+*.class
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+.local-postgres/
+
+# Temp
+tmp/
+temp/
+*.tmp
+*.cache
+
+# Tools
+.tools/m2/

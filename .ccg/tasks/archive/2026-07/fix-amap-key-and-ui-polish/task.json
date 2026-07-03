@@ -1,0 +1,12 @@
+{
+  "id": "fix-amap-key-and-ui-polish",
+  "title": "Fix AMap key migration and polish migrated React UI",
+  "status": "completed",
+  "complexity": "M",
+  "risk": "medium",
+  "domain": "frontend",
+  "currentPhase": "completed",
+  "nextAction": "Archive locally; git archive commit remains blocked because workspace is not a git repository",
+  "createdAt": "2026-07-02T19:00:17.0527665+08:00",
+  "branch": "none"
+}
