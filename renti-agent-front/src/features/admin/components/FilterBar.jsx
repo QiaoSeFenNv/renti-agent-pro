@@ -21,7 +21,7 @@ export function FilterInput({ label, className = 'w-44', ...rest }) {
     <label className={['block', className].join(' ')}>
       <span className="mb-1 block text-xs font-medium text-ink-500">{label}</span>
       <input
-        className="h-9 w-full rounded-xl border-0 bg-white px-3 text-sm text-ink-900 shadow-sm ring-1 ring-inset ring-ink-200 placeholder:text-ink-300 focus:ring-2 focus:ring-brand-500"
+        className="h-9 w-full rounded-xl border-0 bg-black/30 px-3 text-sm text-ink-900 ring-1 ring-inset ring-white/10 transition placeholder:text-ink-300 focus:bg-black/45 focus:ring-2 focus:ring-brand-500/80"
         {...rest}
       />
     </label>
@@ -34,7 +34,7 @@ export function FilterSelect({ label, className = 'w-40', children, ...rest }) {
     <label className={['block', className].join(' ')}>
       <span className="mb-1 block text-xs font-medium text-ink-500">{label}</span>
       <select
-        className="h-9 w-full rounded-xl border-0 bg-white px-2.5 text-sm text-ink-900 shadow-sm ring-1 ring-inset ring-ink-200 focus:ring-2 focus:ring-brand-500"
+        className="h-9 w-full rounded-xl border-0 bg-black/30 px-2.5 text-sm text-ink-900 ring-1 ring-inset ring-white/10 transition focus:bg-black/45 focus:ring-2 focus:ring-brand-500/80"
         {...rest}
       >
         {children}

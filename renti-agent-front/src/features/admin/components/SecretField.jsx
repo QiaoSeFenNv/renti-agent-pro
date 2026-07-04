@@ -19,7 +19,7 @@ function SecretField({ label, value, onChange, configured, clearChecked, onClear
       <div className="mb-1.5 flex items-center justify-between">
         <span className="block text-sm font-medium text-ink-700">{label}</span>
         {configured !== undefined && (
-          <span className={['text-xs', configured ? 'text-emerald-600' : 'text-ink-400'].join(' ')}>
+          <span className={['text-xs', configured ? 'text-emerald-700' : 'text-ink-400'].join(' ')}>
             {configured ? '已配置' : '未配置'}
           </span>
         )}
@@ -27,7 +27,7 @@ function SecretField({ label, value, onChange, configured, clearChecked, onClear
       <div className="relative">
         <input
           type={visible ? 'text' : 'password'}
-          className="h-11 w-full rounded-xl border-0 bg-white px-3.5 pr-16 text-sm text-ink-900 shadow-sm ring-1 ring-inset ring-ink-200 placeholder:text-ink-300 focus:ring-2 focus:ring-brand-500"
+          className="h-11 w-full rounded-xl border-0 bg-black/30 px-3.5 pr-16 font-mono text-sm text-ink-900 ring-1 ring-inset ring-white/10 transition placeholder:font-sans placeholder:text-ink-300 focus:bg-black/45 focus:ring-2 focus:ring-brand-500/80"
           placeholder={placeholder ?? '留空保留已保存的密钥'}
           value={value}
           onChange={(event) => onChange(event.target.value)}
@@ -47,7 +47,7 @@ function SecretField({ label, value, onChange, configured, clearChecked, onClear
         <label className="mt-1.5 flex items-center gap-2 text-xs text-ink-500">
           <input
             type="checkbox"
-            className="h-3.5 w-3.5 rounded border-ink-300 text-rose-600 focus:ring-rose-500"
+            className="h-3.5 w-3.5 rounded accent-rose-500"
             checked={Boolean(clearChecked)}
             onChange={(event) => onClearChange(event.target.checked)}
           />

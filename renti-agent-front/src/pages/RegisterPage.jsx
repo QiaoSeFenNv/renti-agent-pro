@@ -169,7 +169,7 @@ function RegisterPage() {
 
               <p className="mt-6 text-center text-sm text-ink-500">
                 已有账号？
-                <Link to="/login" className="ml-1 font-medium text-brand-600 transition hover:text-brand-700">
+                <Link to="/login" className="ml-1 font-medium text-brand-300 transition hover:text-brand-200">
                   去登录
                 </Link>
               </p>
@@ -238,7 +238,7 @@ function RegisterPage() {
                 >
                   返回修改注册信息
                 </button>
-                <Link to="/login" className="font-medium text-brand-600 transition hover:text-brand-700">
+                <Link to="/login" className="font-medium text-brand-300 transition hover:text-brand-200">
                   去登录
                 </Link>
               </div>

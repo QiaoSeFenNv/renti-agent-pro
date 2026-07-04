@@ -17,12 +17,12 @@ function ToolTraceBar({ trace, defaultOpen = false }) {
   if (items.length === 0) return null
 
   return (
-    <div className="rounded-xl bg-ink-50 ring-1 ring-ink-100">
+    <div className="rounded-xl bg-black/25 ring-1 ring-white/[0.07]">
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         aria-expanded={open}
-        className="flex w-full items-center justify-between px-3 py-2 text-xs font-medium text-ink-600 transition hover:text-ink-900"
+        className="flex w-full items-center justify-between px-3 py-2 text-xs font-medium text-ink-500 transition hover:text-ink-900"
       >
         <span className="flex items-center gap-1.5">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-3.5 w-3.5" aria-hidden="true">
@@ -48,7 +48,7 @@ function ToolTraceBar({ trace, defaultOpen = false }) {
         </svg>
       </button>
       {open && (
-        <ol className="space-y-2 border-t border-ink-100 px-3 py-2.5">
+        <ol className="space-y-2 border-t border-white/[0.06] px-3 py-2.5">
           {items.map((item, index) => (
             <li key={`${item.tool}-${index}`} className="flex items-start gap-2">
               <span

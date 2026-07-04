@@ -5,18 +5,18 @@ spring:
     virtual:
       enabled: true
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://127.0.0.1:55432/renti_agent_v2}
-    username: ${DATABASE_USERNAME:renti}
+    url: ${DATABASE_URL:jdbc:postgresql://127.0.0.1:5432/postgres}
+    username: ${DATABASE_USERNAME:postgres}
     password: ${DATABASE_PASSWORD:}
     hikari:
       maximum-pool-size: 10
       connection-timeout: 5000
   jpa:
     hibernate:
-      ddl-auto: update
-    open-in-view: false
+      ddl-auto: create
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
           time_zone: Asia/Shanghai
   jackson:

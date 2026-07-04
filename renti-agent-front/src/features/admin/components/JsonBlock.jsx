@@ -11,7 +11,7 @@ function JsonBlock({ value, maxHeight = 'max-h-96', className = '' }) {
   return (
     <pre
       className={[
-        'overflow-auto rounded-xl bg-ink-950 px-4 py-3 text-xs leading-5 text-ink-100 scrollbar-thin',
+        'overflow-auto rounded-xl bg-black/50 px-4 py-3 font-mono text-xs leading-5 text-ink-800 ring-1 ring-white/[0.06] scrollbar-thin',
         maxHeight,
         className,
       ].join(' ')}

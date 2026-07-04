@@ -27,18 +27,20 @@ function RecommendationCard({ item, active = false, favorite = false, onSelect, 
       onClick={() => onSelect?.(item)}
       onKeyDown={handleKeyDown}
       className={[
-        'cursor-pointer rounded-2xl bg-white p-3 shadow-card ring-1 transition hover:shadow-float',
-        active ? 'ring-2 ring-brand-500' : 'ring-ink-100/60',
+        'group cursor-pointer rounded-2xl p-3 transition duration-200',
+        active
+          ? 'bg-brand-500/[0.08] ring-2 ring-brand-400/70 shadow-glow'
+          : 'bg-white/[0.04] ring-1 ring-white/[0.07] hover:bg-white/[0.07] hover:ring-white/[0.14]',
       ].join(' ')}
     >
       <div className="flex gap-3">
-        <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-brand-50 to-sky-100">
+        <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-brand-50 to-sky-100 ring-1 ring-white/[0.06]">
           {item.image ? (
             <img
               src={imgSrc(item.image)}
               alt={item.title}
               loading="lazy"
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
               onError={(event) => {
                 event.currentTarget.style.display = 'none'
               }}
@@ -55,7 +57,7 @@ function RecommendationCard({ item, active = false, favorite = false, onSelect, 
             </span>
           )}
           {item.match && (
-            <span className="absolute left-1 top-1 rounded-full bg-ink-950/70 px-1.5 py-0.5 text-[10px] font-medium text-white">
+            <span className="absolute left-1 top-1 rounded-full bg-surface-deep/85 px-1.5 py-0.5 text-[10px] font-medium text-cyan-300 ring-1 ring-cyan-400/30 backdrop-blur">
               {item.match}
             </span>
           )}
@@ -74,7 +76,9 @@ function RecommendationCard({ item, active = false, favorite = false, onSelect, 
               aria-pressed={favorite}
               className={[
                 'shrink-0 rounded-full p-1 transition',
-                favorite ? 'text-rose-500 hover:bg-rose-50' : 'text-ink-300 hover:bg-ink-100 hover:text-rose-400',
+                favorite
+                  ? 'text-rose-500 hover:bg-rose-500/10'
+                  : 'text-ink-300 hover:bg-white/[0.08] hover:text-rose-400',
               ].join(' ')}
             >
               <svg viewBox="0 0 24 24" fill={favorite ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" className="h-4 w-4" aria-hidden="true">
@@ -88,11 +92,11 @@ function RecommendationCard({ item, active = false, favorite = false, onSelect, 
           </div>
           {locationText && <p className="mt-0.5 truncate text-xs text-ink-400">{locationText}</p>}
           <div className="mt-1.5 flex items-baseline justify-between gap-2">
-            <p className="text-sm font-semibold text-brand-600">
+            <p className="font-mono text-sm font-semibold text-brand-300">
               {Number.isFinite(item.rentPrice) ? (
                 <>
                   {formatPrice(item.rentPrice)}
-                  <span className="text-xs font-normal text-ink-400">/月</span>
+                  <span className="font-sans text-xs font-normal text-ink-400">/月</span>
                 </>
               ) : (
                 item.priceLabel || '价格待确认'
@@ -114,7 +118,7 @@ function RecommendationCard({ item, active = false, favorite = false, onSelect, 
       )}
 
       {item.riskNotes.length > 0 && (
-        <p className="mt-1.5 truncate text-xs text-rose-500" title={item.riskNotes.join('；')}>
+        <p className="mt-1.5 truncate text-xs text-rose-700" title={item.riskNotes.join('；')}>
           ⚠ {item.riskNotes[0]}
         </p>
       )}
@@ -133,7 +137,7 @@ function RecommendationCard({ item, active = false, favorite = false, onSelect, 
             event.stopPropagation()
             onDetail?.(item)
           }}
-          className="shrink-0 rounded-full px-2.5 py-1 text-xs font-medium text-brand-600 transition hover:bg-brand-50"
+          className="shrink-0 rounded-full px-2.5 py-1 text-xs font-medium text-brand-300 transition hover:bg-brand-500/15 hover:text-brand-200"
         >
           详情 →
         </button>

@@ -72,7 +72,7 @@ function ListingDrawer({ listingId, onClose, onEdit }) {
 
           <section className="space-y-1">
             <h4 className="text-xs font-semibold uppercase tracking-wide text-ink-400">核心字段</h4>
-            <div className="divide-y divide-ink-100/80 rounded-xl px-3 ring-1 ring-ink-100">
+            <div className="divide-y divide-white/[0.06] rounded-xl px-3 ring-1 ring-white/[0.06]">
               <InfoRow label="标题">{read(item, 'title')}</InfoRow>
               <InfoRow label="城市 / 区域">
                 {`${read(item, 'city') ?? '—'} · ${read(item, 'district') ?? '—'} · ${read(item, 'businessArea') ?? '—'}`}
@@ -311,7 +311,7 @@ function AdminListingsPage() {
         <span className="space-x-3 whitespace-nowrap">
           <button
             type="button"
-            className="text-xs font-medium text-brand-600 hover:text-brand-700"
+            className="text-xs font-medium text-brand-300 hover:text-brand-200"
             onClick={(e) => {
               e.stopPropagation()
               setDetailId(read(row, 'listingId'))
@@ -331,7 +331,7 @@ function AdminListingsPage() {
           </button>
           <button
             type="button"
-            className="text-xs font-medium text-rose-600 hover:text-rose-700"
+            className="text-xs font-medium text-rose-700 hover:text-rose-700"
             onClick={(e) => {
               e.stopPropagation()
               setDeleting(row)
@@ -396,7 +396,7 @@ function AdminListingsPage() {
               total={total}
               hasMore={listings.length >= PAGE_SIZE}
               onChange={setPage}
-              className="border-t border-ink-100"
+              className="border-t border-white/[0.06]"
             />
           ) : null
         }

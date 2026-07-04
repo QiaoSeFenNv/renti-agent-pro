@@ -123,18 +123,18 @@ function PluginCard({ plugin, onFlash }) {
         </div>
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-700">
           <label className="flex items-center gap-2">
-            <input type="checkbox" className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500" checked={form.geocode} onChange={(e) => setField('geocode', e.target.checked)} />
+            <input type="checkbox" className="h-4 w-4 rounded accent-brand-500" checked={form.geocode} onChange={(e) => setField('geocode', e.target.checked)} />
             使用高德补坐标
           </label>
           <label className="flex items-center gap-2">
-            <input type="checkbox" className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500" checked={form.cleanupMissing} onChange={(e) => setField('cleanupMissing', e.target.checked)} />
+            <input type="checkbox" className="h-4 w-4 rounded accent-brand-500" checked={form.cleanupMissing} onChange={(e) => setField('cleanupMissing', e.target.checked)} />
             清理本次未命中的旧房源
           </label>
         </div>
 
         <div className="flex flex-wrap items-end gap-3 rounded-xl bg-ink-50 p-3">
           <label className="flex items-center gap-2 text-sm text-ink-700">
-            <input type="checkbox" className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500" checked={form.scheduleEnabled} onChange={(e) => setField('scheduleEnabled', e.target.checked)} />
+            <input type="checkbox" className="h-4 w-4 rounded accent-brand-500" checked={form.scheduleEnabled} onChange={(e) => setField('scheduleEnabled', e.target.checked)} />
             启用定时调度
           </label>
           <label className="block w-36">
@@ -143,7 +143,7 @@ function PluginCard({ plugin, onFlash }) {
               type="number"
               min="15"
               max="10080"
-              className="h-9 w-full rounded-xl border-0 bg-white px-3 text-sm shadow-sm ring-1 ring-inset ring-ink-200 focus:ring-2 focus:ring-brand-500"
+              className="h-9 w-full rounded-xl border-0 bg-black/30 px-3 text-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-brand-500/80"
               value={form.intervalMinutes}
               onChange={(e) => setField('intervalMinutes', e.target.value)}
             />
@@ -361,16 +361,16 @@ function CandidateSection({ onFlash }) {
       {error && <ErrorBar error={error} onRetry={reload} />}
       {actionError && <ErrorBar error={actionError} />}
 
-      <div className="overflow-hidden rounded-2xl bg-white shadow-card ring-1 ring-ink-100/60">
+      <div className="overflow-hidden rounded-2xl bg-surface shadow-card ring-1 ring-white/[0.06]">
         <div className="overflow-x-auto scrollbar-thin">
-          <table className="min-w-full divide-y divide-ink-100 text-sm">
+          <table className="min-w-full divide-y divide-white/[0.06] text-sm">
             <thead>
               <tr>
                 <th className="w-10 px-4 py-3">
                   <input
                     type="checkbox"
                     aria-label="全选"
-                    className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500"
+                    className="h-4 w-4 rounded accent-brand-500"
                     checked={allChecked}
                     onChange={toggleAll}
                   />
@@ -383,19 +383,19 @@ function CandidateSection({ onFlash }) {
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-ink-400">操作</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-ink-100/80">
+            <tbody className="divide-y divide-white/[0.06]">
               {!loading &&
                 candidates.map((candidate) => {
                   const id = read(candidate, 'id')
                   const cStatus = read(candidate, 'status', 'pending')
                   const publishable = read(read(candidate, 'quality') ?? {}, 'publishable', true)
                   return (
-                    <tr key={id} className="transition-colors hover:bg-ink-50/60">
+                    <tr key={id} className="transition-colors hover:bg-white/[0.04]">
                       <td className="px-4 py-3">
                         <input
                           type="checkbox"
                           aria-label={`选择候选 ${id}`}
-                          className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500"
+                          className="h-4 w-4 rounded accent-brand-500"
                           checked={selectedIds.includes(id)}
                           onChange={() => toggleOne(id)}
                         />
@@ -404,7 +404,7 @@ function CandidateSection({ onFlash }) {
                       <td className="max-w-xs px-4 py-3">
                         <button
                           type="button"
-                          className="block max-w-full truncate text-left text-ink-800 hover:text-brand-700"
+                          className="block max-w-full truncate text-left text-ink-800 hover:text-brand-200"
                           onClick={() => setDetail(candidate)}
                           title="查看完整 payload"
                         >
@@ -415,7 +415,7 @@ function CandidateSection({ onFlash }) {
                         {read(read(candidate, 'listing') ?? {}, 'provider') ?? read(candidate, 'source') ?? read(read(candidate, 'listing') ?? {}, 'source') ?? '—'}
                       </td>
                       <td className="max-w-[200px] px-4 py-3">
-                        <span className={['block truncate text-xs', publishable ? 'text-emerald-600' : 'text-amber-600'].join(' ')}>
+                        <span className={['block truncate text-xs', publishable ? 'text-emerald-700' : 'text-amber-700'].join(' ')}>
                           {qualityText(candidate) ?? '—'}
                         </span>
                       </td>
@@ -427,7 +427,7 @@ function CandidateSection({ onFlash }) {
                         <span className="space-x-3">
                           <button
                             type="button"
-                            className="text-xs font-medium text-emerald-600 hover:text-emerald-700 disabled:cursor-not-allowed disabled:text-ink-300"
+                            className="text-xs font-medium text-emerald-700 hover:text-emerald-700 disabled:cursor-not-allowed disabled:text-ink-300"
                             disabled={cStatus === 'approved' || busy === `approve-${id}`}
                             onClick={() => handleApprove(id)}
                           >
@@ -435,7 +435,7 @@ function CandidateSection({ onFlash }) {
                           </button>
                           <button
                             type="button"
-                            className="text-xs font-medium text-rose-600 hover:text-rose-700 disabled:cursor-not-allowed disabled:text-ink-300"
+                            className="text-xs font-medium text-rose-700 hover:text-rose-700 disabled:cursor-not-allowed disabled:text-ink-300"
                             disabled={cStatus === 'rejected' || busy === `reject-${id}`}
                             onClick={() => setRejectTarget(id)}
                           >
@@ -458,7 +458,7 @@ function CandidateSection({ onFlash }) {
             total={total}
             hasMore={candidates.length >= CANDIDATE_PAGE_SIZE}
             onChange={setPage}
-            className="border-t border-ink-100"
+            className="border-t border-white/[0.06]"
           />
         )}
       </div>
@@ -553,7 +553,7 @@ function ImportCard({ onFlash }) {
           <TextField label="城市" value={city} onChange={(e) => setCity(e.target.value)} />
         </div>
         <textarea
-          className="h-48 w-full rounded-xl border-0 bg-ink-950 px-3.5 py-3 font-mono text-xs leading-5 text-ink-100 shadow-sm ring-1 ring-inset ring-ink-800 scrollbar-thin placeholder:text-ink-500 focus:ring-2 focus:ring-brand-500"
+          className="h-48 w-full rounded-xl border-0 bg-black/50 px-3.5 py-3 font-mono text-xs leading-5 text-ink-800 ring-1 ring-inset ring-white/10 scrollbar-thin placeholder:text-ink-500 focus:ring-2 focus:ring-brand-500/80"
           placeholder='[{"external_id":"demo-1","title":"示例房源","district":"浦东","price":"4680元/月","layout":"1室1厅", ...}]'
           value={content}
           onChange={(event) => setContent(event.target.value)}

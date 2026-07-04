@@ -6,7 +6,7 @@ function DataSourceCard({ dataSource }) {
   const links = Array.isArray(dataSource.links) ? dataSource.links.filter((link) => link?.url) : []
 
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-card ring-1 ring-ink-100/60" aria-label="房源数据来源">
+    <section className="rounded-2xl bg-surface p-5 shadow-card ring-1 ring-white/[0.06]" aria-label="房源数据来源">
       <h3 className="text-sm font-semibold text-ink-900">数据来源</h3>
       <p className="mt-1 text-xs leading-5 text-ink-400">这条记录从哪里来、何时更新，以及如何核验。</p>
 
@@ -52,7 +52,7 @@ function DataSourceCard({ dataSource }) {
               href={link.url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-brand-600 ring-1 ring-ink-200 transition hover:bg-brand-50 hover:ring-brand-200"
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.05] px-3 py-1.5 text-xs font-medium text-brand-300 ring-1 ring-white/10 transition hover:bg-brand-500/10 hover:ring-brand-400/40"
             >
               <svg viewBox="0 0 20 20" fill="currentColor" className="h-3 w-3" aria-hidden="true">
                 <path d="M12.232 4.232a2.5 2.5 0 0 1 3.536 3.536l-1.225 1.224a.75.75 0 0 0 1.061 1.06l1.224-1.224a4 4 0 0 0-5.656-5.656l-3 3a4 4 0 0 0 .225 5.865.75.75 0 0 0 .977-1.138 2.5 2.5 0 0 1-.142-3.667l3-3Z" />

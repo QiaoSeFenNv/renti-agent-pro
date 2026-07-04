@@ -54,7 +54,7 @@ function LogRow({ entry }) {
   const hasPayload = data && Object.keys(data).length > 0
 
   return (
-    <li className="px-4 py-3 transition-colors hover:bg-ink-50/60">
+    <li className="px-4 py-3 transition-colors hover:bg-white/[0.04]">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span className="w-36 shrink-0 text-xs tabular-nums text-ink-400">
           {formatTime(read(entry, 'timestamp') ?? read(entry, 'createdAt'))}
@@ -67,7 +67,7 @@ function LogRow({ entry }) {
         {hasPayload && (
           <button
             type="button"
-            className="shrink-0 text-xs font-medium text-brand-600 hover:text-brand-700"
+            className="shrink-0 text-xs font-medium text-brand-300 hover:text-brand-200"
             onClick={() => setOpen((value) => !value)}
           >
             {open ? '收起' : '展开'}
@@ -114,7 +114,7 @@ function AdminLogsPage() {
       </div>
 
       {/* kind Tab */}
-      <div className="flex gap-1 rounded-full bg-ink-100 p-1" role="tablist" aria-label="日志类型">
+      <div className="flex gap-1 rounded-full bg-black/30 p-1 ring-1 ring-inset ring-white/[0.06]" role="tablist" aria-label="日志类型">
         {KIND_TABS.map((tab) => (
           <button
             key={tab.value}
@@ -127,7 +127,7 @@ function AdminLogsPage() {
             }}
             className={[
               'flex-1 rounded-full px-4 py-1.5 text-sm font-medium transition sm:flex-none',
-              kind === tab.value ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500 hover:text-ink-800',
+              kind === tab.value ? 'bg-white/[0.12] text-white' : 'text-ink-500 hover:text-ink-800',
             ].join(' ')}
           >
             {tab.label}
@@ -172,13 +172,13 @@ function AdminLogsPage() {
 
       {error && <ErrorBar error={error} onRetry={reload} />}
 
-      <div className="overflow-hidden rounded-2xl bg-white shadow-card ring-1 ring-ink-100/60">
+      <div className="overflow-hidden rounded-2xl bg-surface shadow-card ring-1 ring-white/[0.06]">
         {loading ? (
           <LoadingBlock text="正在加载日志…" className="py-12" />
         ) : logs.length === 0 ? (
           <EmptyState title="暂无日志" description="当前筛选条件下没有匹配的日志记录" className="py-12" />
         ) : (
-          <ul className="divide-y divide-ink-100/80">
+          <ul className="divide-y divide-white/[0.06]">
             {logs.map((entry, index) => (
               <LogRow key={read(entry, 'id') ?? index} entry={entry} />
             ))}
@@ -191,7 +191,7 @@ function AdminLogsPage() {
             total={total}
             hasMore={logs.length >= PAGE_SIZE}
             onChange={setPage}
-            className="border-t border-ink-100"
+            className="border-t border-white/[0.06]"
           />
         )}
       </div>

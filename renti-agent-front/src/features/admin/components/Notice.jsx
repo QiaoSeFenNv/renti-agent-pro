@@ -18,7 +18,7 @@ export function ErrorBar({ error, onRetry, className = '' }) {
         <button
           type="button"
           onClick={onRetry}
-          className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-200 transition hover:bg-rose-100"
+          className="shrink-0 rounded-full bg-rose-500/10 px-3 py-1 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-200 transition hover:bg-rose-500/20"
         >
           重试
         </button>

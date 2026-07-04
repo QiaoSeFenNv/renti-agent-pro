@@ -82,11 +82,11 @@ function AdminOverviewPage() {
                   <Link
                     key={link.to}
                     to={link.to}
-                    className="group flex items-start gap-3 rounded-2xl p-3.5 ring-1 ring-ink-100 transition hover:-translate-y-0.5 hover:shadow-card hover:ring-brand-200"
+                    className="group flex items-start gap-3 rounded-2xl p-3.5 ring-1 ring-white/[0.06] transition hover:-translate-y-0.5 hover:shadow-card hover:ring-brand-400/40"
                   >
                     <span className="text-xl" aria-hidden="true">{link.icon}</span>
                     <span className="min-w-0">
-                      <span className="block text-sm font-semibold text-ink-900 group-hover:text-brand-700">
+                      <span className="block text-sm font-semibold text-ink-900 group-hover:text-brand-200">
                         {link.title}
                       </span>
                       <span className="mt-0.5 block text-xs leading-5 text-ink-400">{link.desc}</span>

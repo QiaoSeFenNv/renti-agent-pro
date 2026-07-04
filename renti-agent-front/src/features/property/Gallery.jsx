@@ -46,7 +46,7 @@ function Gallery({ title, images = [] }) {
           <GalleryPlaceholder text={list.length > 0 ? '图片暂不可用，来源图片可能已过期' : '当前房源没有可展示的图片'} />
         )}
         {list.length > 1 && (
-          <span className="absolute bottom-3 right-3 rounded-full bg-ink-950/60 px-2.5 py-1 text-xs font-medium text-white">
+          <span className="absolute bottom-3 right-3 rounded-full bg-surface-deep/75 px-2.5 py-1 text-xs font-medium text-white backdrop-blur">
             {index + 1} / {list.length}
           </span>
         )}

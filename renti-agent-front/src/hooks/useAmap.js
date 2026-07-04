@@ -27,10 +27,10 @@ export function loadAmap() {
  * @param {object} options
  * @param {[number, number]} [options.center] 初始中心 [lng, lat]
  * @param {number} [options.zoom]
- * @param {'normal'|'light'} [options.styleName] 地图风格
+ * @param {'dark'|'normal'|'light'} [options.styleName] 地图风格（默认暗色，与全站黑色调一致）
  * @returns {{ containerRef, map, amap, ready, error }}
  */
-export function useAmap({ center = [121.4737, 31.2304], zoom = 12, styleName = 'light' } = {}) {
+export function useAmap({ center = [121.4737, 31.2304], zoom = 12, styleName = 'dark' } = {}) {
   const containerRef = useRef(null)
   const mapRef = useRef(null)
   const [amap, setAmap] = useState(null)
@@ -43,10 +43,15 @@ export function useAmap({ center = [121.4737, 31.2304], zoom = 12, styleName = '
     loadAmap()
       .then((AMap) => {
         if (disposed || !containerRef.current) return
+        const styles = {
+          dark: 'amap://styles/dark',
+          light: 'amap://styles/whitesmoke',
+          normal: 'amap://styles/normal',
+        }
         const map = new AMap.Map(containerRef.current, {
           center,
           zoom,
-          mapStyle: styleName === 'light' ? 'amap://styles/whitesmoke' : 'amap://styles/normal',
+          mapStyle: styles[styleName] ?? styles.dark,
           viewMode: '2D',
         })
         map.addControl(new AMap.Scale())

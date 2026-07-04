@@ -11,7 +11,7 @@ function RequirementSummary({ parsed, radius, onRadiusChange, sort, onSortChange
   const parsedRadius = toNumber(readField(parsed || {}, 'radiusMeters', 'radius_meters'))
 
   return (
-    <section className="rounded-2xl bg-white p-4 shadow-card ring-1 ring-ink-100/60" aria-label="需求摘要">
+    <section className="rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/[0.08]" aria-label="需求摘要">
       <h3 className="text-sm font-semibold text-ink-900">需求摘要</h3>
       {(locationText || Number.isFinite(parsedRadius)) && (
         <dl className="mt-2 space-y-1 text-xs leading-5">
@@ -24,7 +24,7 @@ function RequirementSummary({ parsed, radius, onRadiusChange, sort, onSortChange
           {Number.isFinite(parsedRadius) && (
             <div className="flex gap-2">
               <dt className="shrink-0 text-ink-400">解析半径</dt>
-              <dd className="font-medium text-ink-700">{parsedRadius}m</dd>
+              <dd className="font-mono font-medium text-brand-300">{parsedRadius}m</dd>
             </div>
           )}
         </dl>
@@ -43,10 +43,10 @@ function RequirementSummary({ parsed, radius, onRadiusChange, sort, onSortChange
                 onClick={() => onRadiusChange(value)}
                 aria-pressed={active}
                 className={[
-                  'rounded-full px-2 py-1.5 text-xs font-medium ring-1 transition disabled:cursor-not-allowed disabled:opacity-50',
+                  'rounded-full px-2 py-1.5 font-mono text-xs font-medium transition duration-200 disabled:cursor-not-allowed disabled:opacity-40',
                   active
-                    ? 'bg-brand-600 text-white ring-brand-600'
-                    : 'bg-white text-ink-600 ring-ink-200 hover:bg-ink-50 hover:text-ink-900',
+                    ? 'bg-brand-gradient text-white shadow-glow'
+                    : 'bg-white/[0.05] text-ink-500 ring-1 ring-inset ring-white/10 hover:bg-white/[0.09] hover:text-ink-900',
                 ].join(' ')}
               >
                 {value >= 1000 ? `${value / 1000}km` : `${value}m`}
@@ -58,7 +58,7 @@ function RequirementSummary({ parsed, radius, onRadiusChange, sort, onSortChange
 
       <div className="mt-3">
         <p className="text-xs font-medium text-ink-500">排序方式</p>
-        <div className="mt-1.5 inline-flex rounded-full bg-ink-100 p-0.5" role="group" aria-label="排序方式">
+        <div className="mt-1.5 inline-flex rounded-full bg-black/30 p-0.5 ring-1 ring-inset ring-white/[0.06]" role="group" aria-label="排序方式">
           {SORT_OPTIONS.map((option) => {
             const active = sort === option.value
             return (
@@ -68,8 +68,8 @@ function RequirementSummary({ parsed, radius, onRadiusChange, sort, onSortChange
                 onClick={() => onSortChange(option.value)}
                 aria-pressed={active}
                 className={[
-                  'rounded-full px-3 py-1 text-xs font-medium transition',
-                  active ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500 hover:text-ink-800',
+                  'rounded-full px-3 py-1 text-xs font-medium transition duration-200',
+                  active ? 'bg-white/[0.12] text-white shadow-sm' : 'text-ink-500 hover:text-ink-800',
                 ].join(' ')}
               >
                 {option.label}

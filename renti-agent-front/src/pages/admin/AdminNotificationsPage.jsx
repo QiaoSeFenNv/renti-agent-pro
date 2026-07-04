@@ -99,7 +99,7 @@ function NotificationModal({ initial, onClose, onSaved }) {
             id="notification-body"
             rows={5}
             maxLength={1200}
-            className="w-full rounded-xl border-0 bg-white px-3.5 py-3 text-sm text-ink-900 shadow-sm ring-1 ring-inset ring-ink-200 placeholder:text-ink-300 focus:ring-2 focus:ring-brand-500"
+            className="w-full rounded-xl border-0 bg-black/30 px-3.5 py-3 text-sm text-ink-900 ring-1 ring-inset ring-white/10 placeholder:text-ink-300 focus:ring-2 focus:ring-brand-500/80"
             value={form.body}
             onChange={(event) => setField('body', event.target.value)}
           />
@@ -120,7 +120,7 @@ function NotificationModal({ initial, onClose, onSaved }) {
           <label className="flex h-11 items-center gap-2 text-sm text-ink-700">
             <input
               type="checkbox"
-              className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500"
+              className="h-4 w-4 rounded accent-brand-500"
               checked={form.published}
               onChange={(event) => setField('published', event.target.checked)}
             />
@@ -201,14 +201,14 @@ function AdminNotificationsPage() {
         <span className="space-x-3 whitespace-nowrap">
           <button
             type="button"
-            className="text-xs font-medium text-brand-600 hover:text-brand-700"
+            className="text-xs font-medium text-brand-300 hover:text-brand-200"
             onClick={() => setEditing(row)}
           >
             编辑
           </button>
           <button
             type="button"
-            className="text-xs font-medium text-rose-600 hover:text-rose-700"
+            className="text-xs font-medium text-rose-700 hover:text-rose-700"
             onClick={() => setDeleting(row)}
           >
             删除

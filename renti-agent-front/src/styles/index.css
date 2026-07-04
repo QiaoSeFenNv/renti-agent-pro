@@ -3,22 +3,74 @@
 @tailwind utilities;
 
 /*
- * 全局基础样式：仅保留 Tailwind 无法直接表达的部分
- * （滚动条、地图容器覆盖、进入动画），其余样式一律使用原子类。
+ * 全局基础样式：黑色科技风底座。
+ * 仅保留 Tailwind 无法直接表达的部分（字体、滚动条、地图覆盖、动画、
+ * 玻璃拟态与背景纹理工具类），其余样式一律使用原子类。
  */
+
+/* ---------- 本地字体（可变字体，避免运行时外链） ---------- */
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter-var.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-var.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-var.woff2') format('woff2');
+}
 
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-color: theme('colors.ink.50');
+    color-scheme: dark;
   }
 
   body {
-    @apply bg-ink-50 font-sans text-ink-900;
+    @apply bg-ink-50 font-sans text-ink-700;
   }
 
   ::selection {
-    @apply bg-brand-500/20 text-brand-900;
+    @apply bg-brand-500/40 text-white;
+  }
+
+  /* 全局暗色细滚动条 */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.ink.300') transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-ink-200;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    @apply bg-ink-300;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
   }
 }
 
@@ -28,21 +80,96 @@
     scrollbar-color: theme('colors.ink.200') transparent;
   }
 
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  /* 玻璃拟态面板：悬浮于地图/图片之上的信息载体 */
+  .glass {
+    @apply bg-white/[0.045] ring-1 ring-white/10 backdrop-blur-xl;
   }
 
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-ink-200;
+  .glass-strong {
+    @apply bg-surface/85 ring-1 ring-white/10 backdrop-blur-2xl;
+  }
+
+  /* 品牌渐变文字 */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(100deg, #9db9ff 0%, #5b8cff 42%, #22d3ee 100%);
+  }
+
+  /* 精细网格（科技图纸感），配合遮罩用于 hero/空态背景 */
+  .bg-grid {
+    background-image:
+      linear-gradient(rgba(148, 163, 202, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 202, 0.07) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .bg-grid-fade {
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 78%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 78%);
+  }
+
+  /* 噪点：压住大面积深色的色带 */
+  .bg-noise::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   .animate-fade-up {
-    animation: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
   .animate-fade-in {
     animation: fade-in 0.3s ease both;
+  }
+
+  .animate-float-slow {
+    animation: float-slow 9s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 3.2s ease-in-out infinite;
+  }
+
+  /* 打字机光标 */
+  .type-caret::after {
+    content: '';
+    display: inline-block;
+    width: 2px;
+    height: 1.05em;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    background: linear-gradient(180deg, #5b8cff, #22d3ee);
+    animation: caret-blink 1s steps(2, start) infinite;
+  }
+
+  /* 滚动渐显：配合 useReveal hook */
+  .reveal {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* 按钮光泽扫过（配合 group/overflow-hidden 使用） */
+  .shine::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-130%) skewX(-18deg);
+    background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.28) 50%, transparent 70%);
+    transition: transform 0.65s ease;
+  }
+
+  .shine:hover::before {
+    transform: translateX(130%) skewX(-18deg);
   }
 }
 
@@ -66,7 +193,80 @@
   }
 }
 
-/* 高德地图版权信息在深色卡片下的可读性处理 */
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(24px, -18px, 0) scale(1.06);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes caret-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .animate-float-slow,
+  .animate-pulse-glow,
+  .type-caret::after {
+    animation: none;
+  }
+}
+
+/* ---------- 高德地图暗色适配 ---------- */
+
 .amap-copyright {
-  opacity: 0.6;
+  opacity: 0.45;
+}
+
+.amap-logo img {
+  opacity: 0.55;
+}
+
+/* InfoWindow 外壳交给内容自绘（内容用 glass-strong 卡片） */
+.amap-info-content {
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.amap-info-sharp {
+  display: none !important;
+}
+
+.amap-info-close {
+  background: rgba(13, 15, 24, 0.9) !important;
+  border-radius: 9999px;
+  width: 22px !important;
+  height: 22px !important;
+  line-height: 20px !important;
+  text-align: center;
+  color: #8b96b3 !important;
+  top: 6px !important;
+  right: 6px !important;
 }

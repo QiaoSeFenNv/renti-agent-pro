@@ -34,7 +34,7 @@ function StepTimeline({ steps }) {
     return <p className="text-xs text-ink-400">（无步骤记录）</p>
   }
   return (
-    <ol className="relative space-y-4 border-l border-ink-100 pl-5">
+    <ol className="relative space-y-4 border-l border-white/[0.06] pl-5">
       {steps.map((step, index) => {
         const status = read(step, 'status')
         const tone = statusTone(status)
@@ -256,7 +256,7 @@ function AdminTracesPage() {
               total={total}
               hasMore={traces.length >= PAGE_SIZE}
               onChange={setPage}
-              className="border-t border-ink-100"
+              className="border-t border-white/[0.06]"
             />
           ) : null
         }

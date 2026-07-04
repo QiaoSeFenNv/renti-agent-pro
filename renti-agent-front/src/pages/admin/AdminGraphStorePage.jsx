@@ -152,7 +152,7 @@ function ConfigSection({ onFlash }) {
                 <label className="flex items-center gap-2 text-sm text-ink-700 sm:col-span-2">
                   <input
                     type="checkbox"
-                    className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500"
+                    className="h-4 w-4 rounded accent-brand-500"
                     checked={draft.insecureSkipVerify}
                     onChange={(e) => setField('insecureSkipVerify', e.target.checked)}
                   />
@@ -266,7 +266,7 @@ function CypherSection() {
       <CardHeader title="Cypher 控制台" description="只读查询（仅支持 MATCH/RETURN 类语句）" />
       <CardBody className="space-y-3">
         <textarea
-          className="h-28 w-full rounded-xl border-0 bg-ink-950 px-3.5 py-3 font-mono text-xs leading-5 text-ink-100 shadow-sm ring-1 ring-inset ring-ink-800 scrollbar-thin focus:ring-2 focus:ring-brand-500"
+          className="h-28 w-full rounded-xl border-0 bg-black/50 px-3.5 py-3 font-mono text-xs leading-5 text-ink-800 ring-1 ring-inset ring-white/10 scrollbar-thin focus:ring-2 focus:ring-brand-500/80"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           aria-label="Cypher 查询"
@@ -284,8 +284,8 @@ function CypherSection() {
         {result && rows.length === 0 && <EmptyState title="查询无结果" className="py-8" />}
 
         {rows.length > 0 && uniform ? (
-          <div className="overflow-x-auto rounded-xl ring-1 ring-ink-100 scrollbar-thin">
-            <table className="min-w-full divide-y divide-ink-100 text-sm">
+          <div className="overflow-x-auto rounded-xl ring-1 ring-white/[0.06] scrollbar-thin">
+            <table className="min-w-full divide-y divide-white/[0.06] text-sm">
               <thead>
                 <tr>
                   {columns.map((column) => (
@@ -295,9 +295,9 @@ function CypherSection() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-ink-100/80">
+              <tbody className="divide-y divide-white/[0.06]">
                 {rows.map((row, index) => (
-                  <tr key={index} className="hover:bg-ink-50/60">
+                  <tr key={index} className="hover:bg-white/[0.04]">
                     {columns.map((column) => {
                       const value = row[column]
                       return (

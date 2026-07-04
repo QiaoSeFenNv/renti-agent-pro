@@ -1,6 +1,6 @@
 import Button from '../../components/ui/Button.jsx'
 
-/** 搜索面板：自然语言输入 + 普通搜索 / Agent 深度搜索；导入模式下退化为本地筛选输入 */
+/** 搜索命令条：自然语言输入 + 普通搜索 / Agent 深度搜索；导入模式下退化为本地筛选输入 */
 function SearchPanel({
   value,
   onChange,
@@ -25,7 +25,7 @@ function SearchPanel({
       </label>
       <textarea
         id="workspace-query"
-        rows={3}
+        rows={2}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={handleKeyDown}
@@ -34,7 +34,7 @@ function SearchPanel({
             ? '输入关键词筛选已导入的房源（标题 / 位置）'
             : `例如：${city || '上海'}人民广场附近预算 6000 以内的一居室`
         }
-        className="w-full resize-none rounded-xl border-0 bg-ink-50 px-3.5 py-2.5 text-sm leading-6 text-ink-900 ring-1 ring-inset ring-ink-200 transition placeholder:text-ink-300 focus:bg-white focus:ring-2 focus:ring-brand-500"
+        className="w-full resize-none rounded-xl border-0 bg-black/30 px-3.5 py-2.5 font-mono text-sm leading-6 text-ink-900 ring-1 ring-inset ring-white/10 transition duration-200 placeholder:font-sans placeholder:text-ink-300 focus:bg-black/45 focus:shadow-glow focus:ring-2 focus:ring-brand-500/80"
       />
       {isImportMode ? (
         <p className="mt-1.5 text-xs leading-5 text-ink-400">

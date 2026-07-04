@@ -102,7 +102,8 @@ function CitySelectPage() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         {/* 标题与说明 */}
         <div className="animate-fade-up">
-          <h1 className="text-3xl font-semibold tracking-tight text-ink-900">{title}</h1>
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-brand-400">Workspace</p>
+          <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink-900">{title}</h1>
           <p className="mt-2 text-sm text-ink-500">{notice}</p>
         </div>
 
@@ -130,7 +131,7 @@ function CitySelectPage() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="搜索城市名称 / 拼音 / 省份"
-              className="h-11 w-full rounded-full border-0 bg-white pl-10 pr-4 text-sm text-ink-900 shadow-sm ring-1 ring-inset ring-ink-200 transition placeholder:text-ink-300 focus:ring-2 focus:ring-brand-500"
+              className="h-11 w-full rounded-full border-0 bg-black/30 pl-10 pr-4 text-sm text-ink-900 ring-1 ring-inset ring-white/10 transition duration-200 placeholder:text-ink-300 focus:bg-black/45 focus:shadow-glow focus:ring-2 focus:ring-brand-500/80"
             />
           </div>
         </div>
@@ -164,10 +165,10 @@ function CitySelectPage() {
                       disabled={!enabled}
                       aria-label={enabled ? `进入${city.name}工作台` : `${city.name} 即将开放`}
                       className={[
-                        'relative w-full rounded-2xl bg-white p-4 text-left shadow-card ring-1 transition',
+                        'relative w-full rounded-2xl bg-white/[0.04] p-4 text-left ring-1 transition duration-300',
                         enabled
-                          ? 'ring-ink-100/60 hover:-translate-y-0.5 hover:shadow-float hover:ring-brand-200'
-                          : 'cursor-not-allowed ring-ink-100/60 opacity-60',
+                          ? 'ring-white/[0.07] hover:-translate-y-1 hover:bg-white/[0.07] hover:shadow-glow hover:ring-brand-400/40'
+                          : 'cursor-not-allowed ring-white/[0.05] opacity-50',
                       ].join(' ')}
                     >
                       {!enabled && (
@@ -178,7 +179,7 @@ function CitySelectPage() {
                       <p className={['text-base font-semibold', enabled ? 'text-ink-900' : 'text-ink-500'].join(' ')}>
                         {city.name}
                       </p>
-                      <p className="mt-1 truncate text-xs text-ink-400">
+                      <p className="mt-1 truncate font-mono text-xs uppercase tracking-wide text-ink-400">
                         {[city.nameEn || city.en, city.province].filter(Boolean).join(' · ') || '—'}
                       </p>
                     </button>
@@ -231,10 +232,10 @@ function CitySelectPage() {
                   aria-pressed={active}
                   aria-label={`选择模式：${option.label}`}
                   className={[
-                    'rounded-2xl bg-white p-4 text-left shadow-card ring-1 transition',
+                    'rounded-2xl p-4 text-left ring-1 transition duration-300',
                     active
-                      ? 'ring-2 ring-brand-500'
-                      : 'ring-ink-100/60 hover:ring-brand-200',
+                      ? 'bg-brand-500/[0.08] ring-2 ring-brand-400/70 shadow-glow'
+                      : 'bg-white/[0.04] ring-white/[0.07] hover:bg-white/[0.07] hover:ring-brand-400/40',
                   ].join(' ')}
                 >
                   <div className="flex items-center justify-between gap-2">

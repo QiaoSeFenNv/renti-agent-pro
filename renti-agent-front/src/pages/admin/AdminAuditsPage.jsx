@@ -38,7 +38,7 @@ function HitList({ hits }) {
           {read(hit, 'rentPrice') !== undefined && (
             <span className="text-ink-500">¥{read(hit, 'rentPrice')}/月</span>
           )}
-          <span className="tabular-nums text-brand-600">
+          <span className="tabular-nums text-brand-300">
             {typeof read(hit, 'score') === 'number' ? read(hit, 'score').toFixed(4) : read(hit, 'score') ?? '-'}
           </span>
         </li>
@@ -126,7 +126,7 @@ function AuditDrawer({ auditId, onClose }) {
           {replayError && <ErrorBar error={replayError} />}
           {replay && (
             <section className="rounded-2xl bg-brand-50/60 p-4 ring-1 ring-brand-100">
-              <h4 className="text-xs font-semibold uppercase tracking-wide text-brand-700">回放结果对比</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-wide text-brand-200">回放结果对比</h4>
               <p className="mt-2 text-sm text-ink-700">
                 原 <span className="font-semibold">{read(replay, 'originalTotalHits', 0)}</span> 条 · 新{' '}
                 <span className="font-semibold">{read(replay, 'replayTotalHits', 0)}</span> 条 · Top 重合{' '}
@@ -270,7 +270,7 @@ function AdminAuditsPage() {
               total={total}
               hasMore={audits.length >= PAGE_SIZE}
               onChange={setPage}
-              className="border-t border-ink-100"
+              className="border-t border-white/[0.06]"
             />
           ) : null
         }

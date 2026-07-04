@@ -14,7 +14,7 @@ import { adminService } from '../../services/adminService.js'
 /** 折叠分区容器 */
 function Section({ title, description, defaultOpen = true, children }) {
   return (
-    <details className="group rounded-2xl bg-white shadow-card ring-1 ring-ink-100/60" open={defaultOpen}>
+    <details className="group rounded-2xl bg-surface shadow-card ring-1 ring-white/[0.06]" open={defaultOpen}>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4">
         <div>
           <h3 className="text-sm font-semibold text-ink-900">{title}</h3>
@@ -27,7 +27,7 @@ function Section({ title, description, defaultOpen = true, children }) {
           <path d="M6 9l6 6 6-6" />
         </svg>
       </summary>
-      <div className="border-t border-ink-100 px-5 py-4">{children}</div>
+      <div className="border-t border-white/[0.06] px-5 py-4">{children}</div>
     </details>
   )
 }
@@ -210,24 +210,24 @@ function IntegrationsSection() {
         </div>
         <div className="mt-4 flex flex-wrap items-end gap-x-6 gap-y-3 rounded-xl bg-ink-50 p-4">
           <label className="flex items-center gap-2 text-sm text-ink-700">
-            <input type="checkbox" className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500" checked={draft.rag.mqeEnabled} onChange={(e) => setField('rag', 'mqeEnabled', e.target.checked)} />
+            <input type="checkbox" className="h-4 w-4 rounded accent-brand-500" checked={draft.rag.mqeEnabled} onChange={(e) => setField('rag', 'mqeEnabled', e.target.checked)} />
             MQE 多查询扩展
           </label>
           <label className="flex items-center gap-2 text-sm text-ink-700">
-            <input type="checkbox" className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500" checked={draft.rag.hydeEnabled} onChange={(e) => setField('rag', 'hydeEnabled', e.target.checked)} />
+            <input type="checkbox" className="h-4 w-4 rounded accent-brand-500" checked={draft.rag.hydeEnabled} onChange={(e) => setField('rag', 'hydeEnabled', e.target.checked)} />
             HyDE
           </label>
           <label className="flex items-center gap-2 text-sm text-ink-700">
-            <input type="checkbox" className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500" checked={draft.rag.llmRerankEnabled} onChange={(e) => setField('rag', 'llmRerankEnabled', e.target.checked)} />
+            <input type="checkbox" className="h-4 w-4 rounded accent-brand-500" checked={draft.rag.llmRerankEnabled} onChange={(e) => setField('rag', 'llmRerankEnabled', e.target.checked)} />
             LLM 复排
           </label>
           <label className="block w-28">
             <span className="mb-1 block text-xs font-medium text-ink-500">复排 TopN</span>
-            <input type="number" min="3" max="30" className="h-9 w-full rounded-xl border-0 bg-white px-3 text-sm shadow-sm ring-1 ring-inset ring-ink-200 focus:ring-2 focus:ring-brand-500" value={draft.rag.llmRerankTopN} onChange={(e) => setField('rag', 'llmRerankTopN', e.target.value)} />
+            <input type="number" min="3" max="30" className="h-9 w-full rounded-xl border-0 bg-black/30 px-3 text-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-brand-500/80" value={draft.rag.llmRerankTopN} onChange={(e) => setField('rag', 'llmRerankTopN', e.target.value)} />
           </label>
           <label className="block w-36">
             <span className="mb-1 block text-xs font-medium text-ink-500">扩展生成方式</span>
-            <select className="h-9 w-full rounded-xl border-0 bg-white px-2.5 text-sm shadow-sm ring-1 ring-inset ring-ink-200 focus:ring-2 focus:ring-brand-500" value={draft.rag.queryExpansionProvider} onChange={(e) => setField('rag', 'queryExpansionProvider', e.target.value)}>
+            <select className="h-9 w-full rounded-xl border-0 bg-black/30 px-2.5 text-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-brand-500/80" value={draft.rag.queryExpansionProvider} onChange={(e) => setField('rag', 'queryExpansionProvider', e.target.value)}>
               <option value="local">local</option>
               <option value="llm">llm</option>
             </select>
@@ -256,7 +256,7 @@ function IntegrationsSection() {
           <TextField label="代理 URL（可选）" value={draft.neo4j.proxyUrl} onChange={(e) => setField('neo4j', 'proxyUrl', e.target.value)} />
           <TextField label="超时（秒）" type="number" min="1" max="120" value={draft.neo4j.timeoutSeconds} onChange={(e) => setField('neo4j', 'timeoutSeconds', e.target.value)} />
           <label className="flex items-center gap-2 self-end pb-2 text-sm text-ink-700">
-            <input type="checkbox" className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500" checked={draft.neo4j.insecureSkipVerify} onChange={(e) => setField('neo4j', 'insecureSkipVerify', e.target.checked)} />
+            <input type="checkbox" className="h-4 w-4 rounded accent-brand-500" checked={draft.neo4j.insecureSkipVerify} onChange={(e) => setField('neo4j', 'insecureSkipVerify', e.target.checked)} />
             跳过 TLS 证书校验
           </label>
         </div>
@@ -361,23 +361,23 @@ function PlatformConfigSection() {
                   <li key={index} className="grid grid-cols-1 items-end gap-2 rounded-xl bg-ink-50 p-3 sm:grid-cols-[1fr_1fr_1.4fr_auto_auto]">
                     <label className="block">
                       <span className="mb-1 block text-xs font-medium text-ink-500">value（模型 ID）</span>
-                      <input className="h-9 w-full rounded-xl border-0 bg-white px-3 text-sm shadow-sm ring-1 ring-inset ring-ink-200 focus:ring-2 focus:ring-brand-500" value={option.value ?? ''} onChange={(e) => setOption(index, 'value', e.target.value)} />
+                      <input className="h-9 w-full rounded-xl border-0 bg-black/30 px-3 text-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-brand-500/80" value={option.value ?? ''} onChange={(e) => setOption(index, 'value', e.target.value)} />
                     </label>
                     <label className="block">
                       <span className="mb-1 block text-xs font-medium text-ink-500">名称</span>
-                      <input className="h-9 w-full rounded-xl border-0 bg-white px-3 text-sm shadow-sm ring-1 ring-inset ring-ink-200 focus:ring-2 focus:ring-brand-500" value={option.label ?? ''} onChange={(e) => setOption(index, 'label', e.target.value)} />
+                      <input className="h-9 w-full rounded-xl border-0 bg-black/30 px-3 text-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-brand-500/80" value={option.label ?? ''} onChange={(e) => setOption(index, 'label', e.target.value)} />
                     </label>
                     <label className="block">
                       <span className="mb-1 block text-xs font-medium text-ink-500">描述</span>
-                      <input className="h-9 w-full rounded-xl border-0 bg-white px-3 text-sm shadow-sm ring-1 ring-inset ring-ink-200 focus:ring-2 focus:ring-brand-500" value={option.description ?? ''} onChange={(e) => setOption(index, 'description', e.target.value)} />
+                      <input className="h-9 w-full rounded-xl border-0 bg-black/30 px-3 text-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-brand-500/80" value={option.description ?? ''} onChange={(e) => setOption(index, 'description', e.target.value)} />
                     </label>
                     <label className="flex h-9 items-center gap-1.5 text-xs text-ink-600">
-                      <input type="checkbox" className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500" checked={option.enabled !== false} onChange={(e) => setOption(index, 'enabled', e.target.checked)} />
+                      <input type="checkbox" className="h-4 w-4 rounded accent-brand-500" checked={option.enabled !== false} onChange={(e) => setOption(index, 'enabled', e.target.checked)} />
                       启用
                     </label>
                     <button
                       type="button"
-                      className="h-9 rounded-full px-3 text-xs font-medium text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:text-ink-300"
+                      className="h-9 rounded-full px-3 text-xs font-medium text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:text-ink-300"
                       disabled={draft.modelOptions.length <= 1}
                       onClick={() => removeOption(index)}
                     >
@@ -396,7 +396,7 @@ function PlatformConfigSection() {
                     <label key={size} className="flex items-center gap-2 text-sm text-ink-700">
                       <input
                         type="checkbox"
-                        className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500"
+                        className="h-4 w-4 rounded accent-brand-500"
                         checked={draft.listingPageSizeOptions.includes(size)}
                         onChange={() => togglePageSize(size)}
                       />

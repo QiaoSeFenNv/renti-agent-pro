@@ -17,8 +17,8 @@ function Pagination({ page = 1, totalPages, total, hasMore, onChange, className 
     [
       'inline-flex h-8 items-center rounded-full px-3 text-xs font-medium ring-1 ring-inset transition',
       enabled
-        ? 'bg-white text-ink-700 ring-ink-200 hover:bg-ink-50'
-        : 'cursor-not-allowed bg-ink-50 text-ink-300 ring-ink-100',
+        ? 'bg-white/[0.06] text-ink-700 ring-white/10 hover:bg-white/[0.1] hover:text-white'
+        : 'cursor-not-allowed bg-white/[0.02] text-ink-300 ring-white/[0.06]',
     ].join(' ')
 
   return (

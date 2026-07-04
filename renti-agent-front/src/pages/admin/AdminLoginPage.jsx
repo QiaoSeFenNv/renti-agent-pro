@@ -41,19 +41,20 @@ function AdminLoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-ink-950 via-ink-900 to-brand-950 px-4">
-      {/* 辅助光斑 */}
-      <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-brand-500/20 blur-3xl" aria-hidden="true" />
-      <div className="pointer-events-none absolute -bottom-40 -right-24 h-[28rem] w-[28rem] rounded-full bg-sky-400/10 blur-3xl" aria-hidden="true" />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-ink-50 px-4">
+      {/* 网格 + 辅助光斑 */}
+      <div className="bg-grid bg-grid-fade absolute inset-0" aria-hidden="true" />
+      <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-brand-500/20 blur-3xl animate-float-slow" aria-hidden="true" />
+      <div className="pointer-events-none absolute -bottom-40 -right-24 h-[28rem] w-[28rem] rounded-full bg-cyan-400/10 blur-3xl" aria-hidden="true" />
 
-      <div className="relative w-full max-w-sm animate-fade-up rounded-2xl bg-white p-8 shadow-float">
+      <div className="glass-strong relative w-full max-w-sm animate-fade-up rounded-2xl p-8 shadow-float">
         <div className="mb-6 flex flex-col items-center gap-3">
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-600 text-lg font-bold text-white">
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-gradient text-lg font-bold text-white shadow-glow">
             R
           </span>
           <div className="text-center">
-            <h1 className="text-lg font-semibold text-ink-900">管理控制台</h1>
-            <p className="mt-0.5 text-xs text-ink-400">Renti Agent · 仅限授权管理员访问</p>
+            <h1 className="font-display text-lg font-semibold text-ink-900">管理控制台</h1>
+            <p className="mt-0.5 font-mono text-xs uppercase tracking-wider text-ink-400">Authorized Access Only</p>
           </div>
         </div>
 

@@ -10,7 +10,7 @@ function scoreTone(score) {
 function EvaluationCard({ title, score, summary, children }) {
   const bounded = boundScore(score)
   return (
-    <section className="flex flex-col rounded-2xl bg-white p-4 shadow-card ring-1 ring-ink-100/60">
+    <section className="flex flex-col rounded-2xl bg-surface p-4 shadow-card ring-1 ring-white/[0.06]">
       <div className="flex items-start justify-between gap-2">
         <h3 className="text-sm font-semibold text-ink-900">{title}</h3>
         <Badge tone={scoreTone(bounded)}>{bounded} 分</Badge>

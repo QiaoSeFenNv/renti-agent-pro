@@ -2,7 +2,7 @@
 export function Spinner({ className = 'h-5 w-5', label = '加载中' }) {
   return (
     <svg
-      className={['animate-spin text-brand-600', className].join(' ')}
+      className={['animate-spin text-brand-400', className].join(' ')}
       viewBox="0 0 24 24"
       fill="none"
       role="status"
@@ -27,11 +27,16 @@ export function LoadingBlock({ text = '正在加载…', className = 'py-16' }) 
 /** 空状态占位 */
 export function EmptyState({ icon = '🗂️', title = '暂无数据', description, action, className = 'py-16' }) {
   return (
-    <div className={['flex flex-col items-center justify-center gap-2 text-center', className].join(' ')}>
-      <div className="text-3xl" aria-hidden="true">{icon}</div>
+    <div className={['flex flex-col items-center justify-center gap-3 text-center', className].join(' ')}>
+      <div
+        className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.04] text-2xl ring-1 ring-white/10"
+        aria-hidden="true"
+      >
+        {icon}
+      </div>
       <p className="text-sm font-medium text-ink-700">{title}</p>
       {description && <p className="max-w-sm text-xs leading-5 text-ink-400">{description}</p>}
-      {action && <div className="mt-2">{action}</div>}
+      {action && <div className="mt-1">{action}</div>}
     </div>
   )
 }

@@ -209,35 +209,35 @@ function RagConfigSection({ onFlash }) {
               <p className="mb-3 text-sm font-medium text-ink-700">扩展检索策略</p>
               <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
                 <label className="flex items-center gap-2 text-sm text-ink-700">
-                  <input type="checkbox" className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500" checked={draft.mqeEnabled} onChange={(e) => setField('mqeEnabled', e.target.checked)} />
+                  <input type="checkbox" className="h-4 w-4 rounded accent-brand-500" checked={draft.mqeEnabled} onChange={(e) => setField('mqeEnabled', e.target.checked)} />
                   MQE 多查询扩展
                 </label>
                 <label className="block w-32">
                   <span className="mb-1 block text-xs font-medium text-ink-500">MQE 查询数</span>
-                  <input type="number" min="1" max="8" className="h-9 w-full rounded-xl border-0 bg-white px-3 text-sm shadow-sm ring-1 ring-inset ring-ink-200 focus:ring-2 focus:ring-brand-500" value={draft.mqeQueryCount} onChange={(e) => setField('mqeQueryCount', e.target.value)} />
+                  <input type="number" min="1" max="8" className="h-9 w-full rounded-xl border-0 bg-black/30 px-3 text-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-brand-500/80" value={draft.mqeQueryCount} onChange={(e) => setField('mqeQueryCount', e.target.value)} />
                 </label>
                 <label className="flex items-center gap-2 text-sm text-ink-700">
-                  <input type="checkbox" className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500" checked={draft.hydeEnabled} onChange={(e) => setField('hydeEnabled', e.target.checked)} />
+                  <input type="checkbox" className="h-4 w-4 rounded accent-brand-500" checked={draft.hydeEnabled} onChange={(e) => setField('hydeEnabled', e.target.checked)} />
                   HyDE 假设文档
                 </label>
                 <label className="block w-32">
                   <span className="mb-1 block text-xs font-medium text-ink-500">候选池倍率</span>
-                  <input type="number" min="1" max="10" className="h-9 w-full rounded-xl border-0 bg-white px-3 text-sm shadow-sm ring-1 ring-inset ring-ink-200 focus:ring-2 focus:ring-brand-500" value={draft.candidatePoolMultiplier} onChange={(e) => setField('candidatePoolMultiplier', e.target.value)} />
+                  <input type="number" min="1" max="10" className="h-9 w-full rounded-xl border-0 bg-black/30 px-3 text-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-brand-500/80" value={draft.candidatePoolMultiplier} onChange={(e) => setField('candidatePoolMultiplier', e.target.value)} />
                 </label>
                 <label className="block w-40">
                   <span className="mb-1 block text-xs font-medium text-ink-500">扩展生成方式</span>
-                  <select className="h-9 w-full rounded-xl border-0 bg-white px-2.5 text-sm shadow-sm ring-1 ring-inset ring-ink-200 focus:ring-2 focus:ring-brand-500" value={draft.queryExpansionProvider} onChange={(e) => setField('queryExpansionProvider', e.target.value)}>
+                  <select className="h-9 w-full rounded-xl border-0 bg-black/30 px-2.5 text-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-brand-500/80" value={draft.queryExpansionProvider} onChange={(e) => setField('queryExpansionProvider', e.target.value)}>
                     <option value="local">local（本地规则）</option>
                     <option value="llm">llm（大模型生成）</option>
                   </select>
                 </label>
                 <label className="flex items-center gap-2 text-sm text-ink-700">
-                  <input type="checkbox" className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500" checked={draft.llmRerankEnabled} onChange={(e) => setField('llmRerankEnabled', e.target.checked)} />
+                  <input type="checkbox" className="h-4 w-4 rounded accent-brand-500" checked={draft.llmRerankEnabled} onChange={(e) => setField('llmRerankEnabled', e.target.checked)} />
                   LLM 复排
                 </label>
                 <label className="block w-32">
                   <span className="mb-1 block text-xs font-medium text-ink-500">复排 TopN</span>
-                  <input type="number" min="3" max="30" className="h-9 w-full rounded-xl border-0 bg-white px-3 text-sm shadow-sm ring-1 ring-inset ring-ink-200 focus:ring-2 focus:ring-brand-500" value={draft.llmRerankTopN} onChange={(e) => setField('llmRerankTopN', e.target.value)} />
+                  <input type="number" min="3" max="30" className="h-9 w-full rounded-xl border-0 bg-black/30 px-3 text-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-brand-500/80" value={draft.llmRerankTopN} onChange={(e) => setField('llmRerankTopN', e.target.value)} />
                 </label>
               </div>
             </div>
@@ -354,7 +354,7 @@ function SearchSection() {
             {matches.map((match, index) => (
               <li key={read(match, 'listingId') ?? index} className="rounded-xl bg-ink-50 px-4 py-3">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <span className="tabular-nums text-sm font-semibold text-brand-600">
+                  <span className="tabular-nums text-sm font-semibold text-brand-300">
                     {typeof read(match, 'score') === 'number' ? read(match, 'score').toFixed(4) : read(match, 'score')}
                   </span>
                   <span className="font-medium text-ink-900">{read(match, 'title') ?? read(match, 'community') ?? '—'}</span>
@@ -460,10 +460,10 @@ function PointsSection() {
             {points.map((point, index) => {
               const id = read(point, 'pointId') ?? index
               return (
-                <li key={id} className="rounded-xl ring-1 ring-ink-100">
+                <li key={id} className="rounded-xl ring-1 ring-white/[0.06]">
                   <button
                     type="button"
-                    className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 text-left hover:bg-ink-50"
+                    className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 text-left hover:bg-white/[0.04]"
                     onClick={() => setExpandedId(expandedId === id ? null : id)}
                   >
                     <span className="font-medium text-ink-900">{read(point, 'title') ?? read(point, 'community') ?? '—'}</span>
@@ -476,7 +476,7 @@ function PointsSection() {
                     <span className="ml-auto truncate text-xs text-ink-300">{read(point, 'listingId')}</span>
                   </button>
                   {expandedId === id && (
-                    <div className="border-t border-ink-100 p-3">
+                    <div className="border-t border-white/[0.06] p-3">
                       <JsonBlock value={point} maxHeight="max-h-72" />
                     </div>
                   )}

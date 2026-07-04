@@ -46,14 +46,14 @@ function JsonEditor({ label, value, onSave, saving, hint }) {
   return (
     <div className="space-y-2">
       <textarea
-        className="h-44 w-full rounded-xl border-0 bg-ink-950 px-3.5 py-3 font-mono text-xs leading-5 text-ink-100 shadow-sm ring-1 ring-inset ring-ink-800 scrollbar-thin focus:ring-2 focus:ring-brand-500"
+        className="h-44 w-full rounded-xl border-0 bg-black/50 px-3.5 py-3 font-mono text-xs leading-5 text-ink-800 ring-1 ring-inset ring-white/10 scrollbar-thin focus:ring-2 focus:ring-brand-500/80"
         value={text}
         onChange={(event) => setText(event.target.value)}
         aria-label={label}
         spellCheck="false"
       />
       {hint && <p className="text-xs text-ink-400">{hint}</p>}
-      {error && <p className="text-xs text-rose-600">{error}</p>}
+      {error && <p className="text-xs text-rose-700">{error}</p>}
       <Button size="sm" onClick={handleSave} loading={saving}>
         保存{label}
       </Button>
@@ -147,7 +147,7 @@ function UserDrawer({ userId, onClose, onChanged }) {
 
           <section className="space-y-1">
             <SectionTitle>基本信息</SectionTitle>
-            <div className="divide-y divide-ink-100/80 rounded-xl px-3 ring-1 ring-ink-100">
+            <div className="divide-y divide-white/[0.06] rounded-xl px-3 ring-1 ring-white/[0.06]">
               <InfoRow label="ID">{read(user, 'id', userId)}</InfoRow>
               <InfoRow label="邮箱">{email}</InfoRow>
               <InfoRow label="昵称">{read(user, 'displayName') ?? read(user, 'nickname')}</InfoRow>
@@ -304,7 +304,7 @@ function AdminUsersPage() {
       render: (row) => (
         <button
           type="button"
-          className="text-xs font-medium text-brand-600 hover:text-brand-700"
+          className="text-xs font-medium text-brand-300 hover:text-brand-200"
           onClick={(event) => {
             event.stopPropagation()
             setSelectedId(read(row, 'id'))

@@ -4,17 +4,19 @@ import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore.js'
 import Button from '../ui/Button.jsx'
 
-/** 站点 logo：房子 + 火花 */
+/** 站点 logo：渐变描边暗色方块 + 房子火花 */
 export function BrandMark({ className = 'h-8 w-8' }) {
   return (
     <span
       className={[
-        'inline-flex items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm',
+        'relative inline-flex items-center justify-center rounded-xl bg-surface text-white',
+        'ring-1 ring-white/15 shadow-glow',
         className,
       ].join(' ')}
       aria-hidden="true"
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5">
+      <span className="absolute inset-0 rounded-xl bg-brand-gradient opacity-20" />
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="relative h-5 w-5">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -24,8 +26,9 @@ export function BrandMark({ className = 'h-8 w-8' }) {
           strokeLinecap="round"
           strokeLinejoin="round"
           d="M18.75 2.25 19.3 3.7l1.45.55-1.45.55-.55 1.45-.55-1.45-1.45-.55 1.45-.55.55-1.45Z"
-          fill="currentColor"
-          strokeWidth="0.75"
+          fill="#22d3ee"
+          stroke="#22d3ee"
+          strokeWidth="0.5"
         />
       </svg>
     </span>
@@ -40,7 +43,7 @@ const NAV_ITEMS = [
 
 /**
  * 站点顶部导航：logo + 主导航 + 登录态区域。
- * 滚动后切换为白底阴影。
+ * 置顶透明，滚动后切换为玻璃拟态深色底。
  */
 function SiteHeader() {
   const navigate = useNavigate()
@@ -81,14 +84,18 @@ function SiteHeader() {
   return (
     <header
       className={[
-        'sticky top-0 z-40 transition-all duration-200',
-        scrolled ? 'bg-white/95 shadow-card backdrop-blur' : 'bg-transparent',
+        'sticky top-0 z-40 transition-all duration-300',
+        scrolled
+          ? 'border-b border-white/[0.06] bg-surface-deep/70 shadow-card backdrop-blur-xl'
+          : 'border-b border-transparent bg-transparent',
       ].join(' ')}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link to="/" className="flex items-center gap-2.5" aria-label="Renti Agent 首页">
+        <Link to="/" className="group flex items-center gap-2.5" aria-label="Renti Agent 首页">
           <BrandMark />
-          <span className="text-base font-semibold tracking-tight text-ink-900">Renti Agent</span>
+          <span className="font-display text-base font-semibold tracking-tight text-ink-900 transition group-hover:text-white">
+            Renti Agent
+          </span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="主导航">
@@ -100,7 +107,9 @@ function SiteHeader() {
               className={({ isActive }) =>
                 [
                   'rounded-full px-4 py-2 text-sm font-medium transition-colors',
-                  isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900',
+                  isActive
+                    ? 'bg-white/[0.08] text-white ring-1 ring-inset ring-white/10'
+                    : 'text-ink-500 hover:bg-white/[0.05] hover:text-ink-900',
                 ].join(' ')
               }
             >
@@ -117,10 +126,10 @@ function SiteHeader() {
                 onClick={() => setMenuOpen((open) => !open)}
                 aria-label="用户菜单"
                 aria-expanded={menuOpen}
-                className="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition hover:bg-ink-100"
+                className="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 ring-1 ring-transparent transition hover:bg-white/[0.06] hover:ring-white/10"
               >
                 <span
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-sm font-semibold text-white"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-gradient text-sm font-semibold text-white shadow-glow"
                   aria-hidden="true"
                 >
                   {avatarChar}
@@ -140,18 +149,18 @@ function SiteHeader() {
                 </svg>
               </button>
               {menuOpen && (
-                <div className="absolute right-0 mt-2 w-44 overflow-hidden rounded-2xl bg-white py-1.5 shadow-float ring-1 ring-ink-100 animate-fade-in">
+                <div className="glass-strong absolute right-0 mt-2 w-44 overflow-hidden rounded-2xl py-1.5 shadow-float animate-fade-in">
                   <Link
                     to="/workspace"
                     onClick={() => setMenuOpen(false)}
-                    className="block px-4 py-2 text-sm text-ink-700 transition hover:bg-ink-50"
+                    className="block px-4 py-2 text-sm text-ink-700 transition hover:bg-white/[0.06] hover:text-white"
                   >
                     我的工作台
                   </Link>
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="block w-full px-4 py-2 text-left text-sm text-rose-600 transition hover:bg-rose-50"
+                    className="block w-full px-4 py-2 text-left text-sm text-rose-700 transition hover:bg-rose-500/10"
                   >
                     退出登录
                   </button>
@@ -184,7 +193,9 @@ function SiteHeader() {
             className={({ isActive }) =>
               [
                 'shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
-                isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-600 hover:bg-ink-100',
+                isActive
+                  ? 'bg-white/[0.08] text-white ring-1 ring-inset ring-white/10'
+                  : 'text-ink-500 hover:bg-white/[0.05] hover:text-ink-900',
               ].join(' ')
             }
           >

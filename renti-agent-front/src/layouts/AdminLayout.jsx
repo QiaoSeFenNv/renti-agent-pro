@@ -79,12 +79,12 @@ function SidebarContent({ onNavigate }) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2.5 px-5 py-5">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-500 text-sm font-bold text-white">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-gradient text-sm font-bold text-white shadow-glow">
           R
         </span>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-white">Renti Agent</p>
-          <p className="text-[11px] text-ink-400">管理控制台</p>
+          <p className="font-display text-sm font-semibold text-white">Renti Agent</p>
+          <p className="font-mono text-[11px] uppercase tracking-wider text-ink-400">Admin Console</p>
         </div>
       </div>
 
@@ -105,8 +105,8 @@ function SidebarContent({ onNavigate }) {
                       [
                         'relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors',
                         isActive
-                          ? 'bg-white/5 font-medium text-white before:absolute before:inset-y-1.5 before:left-0 before:w-1 before:rounded-full before:bg-brand-500'
-                          : 'text-ink-300 hover:bg-white/5 hover:text-white',
+                          ? 'bg-white/[0.07] font-medium text-white before:absolute before:inset-y-1.5 before:left-0 before:w-1 before:rounded-full before:bg-brand-gradient'
+                          : 'text-ink-500 hover:bg-white/[0.05] hover:text-white',
                       ].join(' ')
                     }
                   >
@@ -120,18 +120,18 @@ function SidebarContent({ onNavigate }) {
         ))}
       </nav>
 
-      <div className="border-t border-white/10 px-4 py-4">
+      <div className="border-t border-white/[0.08] px-4 py-4">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
             <p className="truncate text-sm font-medium text-white">
               {admin?.username ?? admin?.displayName ?? admin?.email ?? '管理员'}
             </p>
-            <p className="text-[11px] text-ink-500">已登录</p>
+            <p className="text-[11px] text-ink-400">已登录</p>
           </div>
           <button
             type="button"
             onClick={handleLogout}
-            className="shrink-0 rounded-full px-3 py-1.5 text-xs text-ink-300 ring-1 ring-inset ring-white/15 transition hover:bg-white/10 hover:text-white"
+            className="shrink-0 rounded-full px-3 py-1.5 text-xs text-ink-500 ring-1 ring-inset ring-white/15 transition hover:bg-white/10 hover:text-white"
           >
             退出
           </button>
@@ -159,15 +159,15 @@ function AdminLayout() {
   return (
     <div className="flex min-h-screen bg-ink-50">
       {/* 桌面侧边栏 */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 bg-ink-950 lg:block">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 border-r border-white/[0.06] bg-surface-deep lg:block">
         <SidebarContent />
       </aside>
 
       {/* 移动端抽屉 */}
       {drawerOpen && (
         <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="管理导航">
-          <div className="absolute inset-0 bg-ink-950/50 animate-fade-in" onClick={() => setDrawerOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 w-60 bg-ink-950 shadow-float">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" onClick={() => setDrawerOpen(false)} />
+          <aside className="absolute inset-y-0 left-0 w-60 bg-surface-deep shadow-float ring-1 ring-white/10">
             <SidebarContent onNavigate={() => setDrawerOpen(false)} />
           </aside>
         </div>
@@ -175,7 +175,7 @@ function AdminLayout() {
 
       <div className="flex min-w-0 flex-1 flex-col lg:pl-60">
         {/* 顶部面包屑条 */}
-        <header className="sticky top-0 z-20 flex h-12 items-center justify-between gap-3 border-b border-ink-100 bg-white/90 px-4 backdrop-blur sm:px-6">
+        <header className="sticky top-0 z-20 flex h-12 items-center justify-between gap-3 border-b border-white/[0.06] bg-surface-deep/70 px-4 backdrop-blur-xl sm:px-6">
           <div className="flex items-center gap-2 text-sm">
             <button
               type="button"
@@ -195,7 +195,7 @@ function AdminLayout() {
             type="button"
             onClick={() => setRefreshKey((key) => key + 1)}
             aria-label="刷新当前页数据"
-            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs text-ink-500 ring-1 ring-inset ring-ink-200 transition hover:bg-ink-50 hover:text-ink-800"
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs text-ink-500 ring-1 ring-inset ring-white/10 transition hover:bg-white/[0.06] hover:text-white"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M4 4v6h6M20 20v-6h-6M20 9a8 8 0 00-14.5-3M4 15a8 8 0 0014.5 3" />

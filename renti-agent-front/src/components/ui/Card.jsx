@@ -1,12 +1,14 @@
 /**
- * 卡片容器：白底、圆角、柔和阴影，全站统一的信息承载单元。
+ * 卡片容器：深色面板、圆角、内侧高光 + 深阴影，全站统一的信息承载单元。
  */
 export function Card({ className = '', hover = false, children, ...rest }) {
   return (
     <div
       className={[
-        'rounded-2xl bg-white shadow-card ring-1 ring-ink-100/60',
-        hover ? 'transition duration-200 hover:-translate-y-0.5 hover:shadow-float' : '',
+        'rounded-2xl bg-surface shadow-card ring-1 ring-white/[0.06]',
+        hover
+          ? 'transition duration-300 hover:-translate-y-1 hover:shadow-float hover:ring-white/[0.14]'
+          : '',
         className,
       ].join(' ')}
       {...rest}

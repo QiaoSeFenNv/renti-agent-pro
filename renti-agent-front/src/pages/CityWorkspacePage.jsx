@@ -35,13 +35,13 @@ function ListingSkeleton() {
   return (
     <div className="space-y-3" aria-hidden="true">
       {[0, 1, 2].map((key) => (
-        <div key={key} className="animate-pulse rounded-2xl bg-white p-3 shadow-card ring-1 ring-ink-100/60">
+        <div key={key} className="animate-pulse rounded-2xl bg-white/[0.04] p-3 ring-1 ring-white/[0.06]">
           <div className="flex gap-3">
-            <div className="h-20 w-24 rounded-xl bg-ink-100" />
+            <div className="h-20 w-24 rounded-xl bg-white/[0.07]" />
             <div className="flex-1 space-y-2 py-1">
-              <div className="h-3.5 w-3/4 rounded bg-ink-100" />
-              <div className="h-3 w-1/2 rounded bg-ink-100" />
-              <div className="h-3.5 w-1/3 rounded bg-ink-100" />
+              <div className="h-3.5 w-3/4 rounded bg-white/[0.07]" />
+              <div className="h-3 w-1/2 rounded bg-white/[0.06]" />
+              <div className="h-3.5 w-1/3 rounded bg-white/[0.07]" />
             </div>
           </div>
         </div>
@@ -51,7 +51,7 @@ function ListingSkeleton() {
 }
 
 /**
- * 城市地图工作台：左侧搜索/结果面板 + 右侧高德地图。
+ * 城市地图工作台：全屏暗色地图为主界面，搜索命令条与结果列表以玻璃面板悬浮其上。
  * 功能对齐旧版 CityPage.vue：自然语言搜索、Agent 深度搜索、地图选点、
  * 半径圈、marker 联动、收藏、分页、user_import 自有房源模式。
  */
@@ -306,7 +306,7 @@ function CityWorkspacePage() {
       if (!map || !amap || !item || !Number.isFinite(item.longitude) || !Number.isFinite(item.latitude)) return
 
       const root = document.createElement('div')
-      root.className = 'w-60 overflow-hidden rounded-xl'
+      root.className = 'w-64 overflow-hidden rounded-2xl bg-surface-raised shadow-float ring-1 ring-white/10'
       const src = imgSrc(item.image)
       const priceText = Number.isFinite(item.rentPrice)
         ? `${formatPrice(item.rentPrice)}/月`
@@ -317,22 +317,22 @@ function CityWorkspacePage() {
             ? `<img src="${escapeHtml(src)}" alt="${escapeHtml(item.title)}" class="h-28 w-full object-cover" onerror="this.style.display='none'" />`
             : '<div class="flex h-16 items-center justify-center bg-gradient-to-br from-brand-50 to-sky-100 text-xs text-ink-400">暂无图片</div>'
         }
-        <div class="space-y-1 bg-white p-3">
+        <div class="space-y-1 p-3">
           <p class="truncate text-sm font-semibold text-ink-900">${escapeHtml(item.title)}</p>
-          <p class="text-sm font-semibold text-brand-600">${escapeHtml(priceText)}</p>
+          <p class="font-mono text-sm font-semibold text-brand-300">${escapeHtml(priceText)}</p>
         </div>`
       const detailButton = document.createElement('button')
       detailButton.type = 'button'
       detailButton.textContent = '查看详情'
       detailButton.className =
-        'block w-full bg-brand-600 px-3 py-2 text-center text-xs font-medium text-white transition hover:bg-brand-700'
+        'block w-full bg-brand-gradient px-3 py-2.5 text-center text-xs font-semibold text-white transition hover:brightness-110'
       detailButton.addEventListener('click', () => {
         stateRef.current.navigate(`/property/${encodeURIComponent(item.id)}`)
       })
       root.appendChild(detailButton)
 
       if (!infoWindowRef.current) {
-        infoWindowRef.current = new amap.InfoWindow({ offset: new amap.Pixel(0, -36) })
+        infoWindowRef.current = new amap.InfoWindow({ offset: new amap.Pixel(0, -40) })
       }
       infoWindowRef.current.setContent(root)
       infoWindowRef.current.open(map, [item.longitude, item.latitude])
@@ -350,12 +350,12 @@ function CityWorkspacePage() {
       const element = document.createElement('button')
       element.type = 'button'
       element.className = [
-        'whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold shadow-float ring-1 transition',
+        'whitespace-nowrap rounded-full px-2.5 py-1 font-mono text-xs font-semibold backdrop-blur transition ring-1',
         selected
-          ? 'bg-brand-600 text-white ring-brand-700'
+          ? 'bg-brand-gradient text-white ring-white/25 shadow-glow'
           : marker.withinRadius === false
-            ? 'bg-white/90 text-ink-400 ring-ink-200'
-            : 'bg-white text-ink-900 ring-ink-200 hover:ring-brand-300',
+            ? 'bg-surface-deep/70 text-ink-400 ring-white/10'
+            : 'bg-surface-deep/85 text-ink-800 ring-white/15 shadow-card hover:text-white hover:ring-brand-400/60',
       ].join(' ')
       element.textContent = marker.priceLabel || marker.title || '房源'
       element.setAttribute('aria-label', `${marker.title || '房源'} ${marker.priceLabel || ''}`)
@@ -393,8 +393,11 @@ function CityWorkspacePage() {
     const element = document.createElement('div')
     element.className = 'flex flex-col items-center'
     element.innerHTML = `
-      <span class="whitespace-nowrap rounded-full bg-ink-950 px-2.5 py-1 text-xs font-medium text-white shadow-float">${escapeHtml(resultCenter.label)}</span>
-      <span class="mt-1 h-3 w-3 rounded-full border-2 border-white bg-brand-600 shadow"></span>`
+      <span class="whitespace-nowrap rounded-full bg-surface-deep/90 px-2.5 py-1 text-xs font-medium text-white ring-1 ring-cyan-400/40 shadow-glow backdrop-blur">${escapeHtml(resultCenter.label)}</span>
+      <span class="relative mt-1.5 flex h-3.5 w-3.5">
+        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-60"></span>
+        <span class="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-surface-deep bg-cyan-300"></span>
+      </span>`
     targetMarkerRef.current = new amap.Marker({
       position: [resultCenter.lng, resultCenter.lat],
       content: element,
@@ -405,11 +408,11 @@ function CityWorkspacePage() {
     circleRef.current = new amap.Circle({
       center: [resultCenter.lng, resultCenter.lat],
       radius: resultRadius,
-      strokeColor: '#1d60f1',
-      strokeOpacity: 0.7,
-      strokeWeight: 1.2,
-      fillColor: '#1d60f1',
-      fillOpacity: 0.08,
+      strokeColor: '#477bff',
+      strokeOpacity: 0.55,
+      strokeWeight: 1.4,
+      fillColor: '#477bff',
+      fillOpacity: 0.07,
       bubble: true,
     })
     map.add(circleRef.current)
@@ -586,7 +589,7 @@ function CityWorkspacePage() {
         <EmptyState
           icon="🗺️"
           title="从一句话或一次点击开始"
-          description={`输入${city}的租房需求，或直接点击右侧地图任意位置，以该点为中心搜索周边房源。`}
+          description={`输入${city}的租房需求，或直接点击地图任意位置，以该点为中心搜索周边房源。`}
         />
       )
     }
@@ -637,14 +640,33 @@ function CityWorkspacePage() {
     : search.status === 'ready' && !needsClarification && listings.length > 0
 
   return (
-    <div className="flex h-screen flex-col bg-ink-50">
-      {/* 顶部工具条 */}
-      <header className="z-20 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-ink-100 bg-white px-4">
-        <div className="flex min-w-0 items-center gap-2.5">
+    <div className="relative h-screen w-full overflow-hidden bg-ink-50">
+      {/* ---------- 全屏地图 ---------- */}
+      <div ref={containerRef} className="absolute inset-0" role="application" aria-label={`${city}房源地图`} />
+
+      {!mapReady && !mapError && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center overflow-hidden bg-ink-50">
+          <div className="bg-grid bg-grid-fade absolute inset-0" aria-hidden="true" />
+          <LoadingBlock text="正在加载高德地图…" className="relative py-0" />
+        </div>
+      )}
+      {mapError && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-ink-50">
+          <EmptyState
+            icon="🛰️"
+            title="地图加载失败"
+            description="请检查网络或高德地图 Key 配置后刷新页面重试。"
+          />
+        </div>
+      )}
+
+      {/* ---------- 顶部悬浮条 ---------- */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between gap-3 p-3 sm:p-4">
+        <div className="pointer-events-auto glass-strong flex h-11 min-w-0 items-center gap-1.5 rounded-full pl-1.5 pr-3 shadow-float">
           <Link
             to="/cities"
             aria-label="返回城市选择"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-500 transition hover:bg-ink-100 hover:text-ink-900"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-500 transition hover:bg-white/[0.08] hover:text-white"
           >
             <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4" aria-hidden="true">
               <path
@@ -655,13 +677,15 @@ function CityWorkspacePage() {
             </svg>
           </Link>
           <Link to="/" aria-label="Renti Agent 首页" className="shrink-0">
-            <BrandMark className="h-8 w-8" />
+            <BrandMark className="h-7 w-7" />
           </Link>
-          <h1 className="truncate text-sm font-semibold text-ink-900">{city} · 城市工作台</h1>
-          <Badge tone={isImportMode ? 'warning' : 'brand'}>{isImportMode ? '自有房源模式' : '平台房源模式'}</Badge>
+          <h1 className="ml-1 truncate font-display text-sm font-semibold text-ink-900">{city}</h1>
+          <Badge tone={isImportMode ? 'warning' : 'brand'} className="shrink-0">
+            {isImportMode ? '自有房源' : '平台房源'}
+          </Badge>
         </div>
 
-        <div className="relative shrink-0" ref={menuRef}>
+        <div className="pointer-events-auto relative shrink-0" ref={menuRef}>
           {authStatus === 'authenticated' && user ? (
             <>
               <button
@@ -669,10 +693,10 @@ function CityWorkspacePage() {
                 onClick={() => setMenuOpen((open) => !open)}
                 aria-label="用户菜单"
                 aria-expanded={menuOpen}
-                className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 transition hover:bg-ink-100"
+                className="glass-strong flex h-11 items-center gap-2 rounded-full py-1 pl-1.5 pr-3 shadow-float transition hover:ring-white/25"
               >
                 <span
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-600 text-xs font-semibold text-white"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-gradient text-xs font-semibold text-white shadow-glow"
                   aria-hidden="true"
                 >
                   {avatarChar}
@@ -680,18 +704,18 @@ function CityWorkspacePage() {
                 <span className="hidden max-w-[7rem] truncate text-xs font-medium text-ink-700 sm:block">{nickname}</span>
               </button>
               {menuOpen && (
-                <div className="absolute right-0 mt-2 w-40 overflow-hidden rounded-2xl bg-white py-1.5 shadow-float ring-1 ring-ink-100 animate-fade-in">
+                <div className="glass-strong absolute right-0 mt-2 w-40 overflow-hidden rounded-2xl py-1.5 shadow-float animate-fade-in">
                   <Link
                     to="/workspace"
                     onClick={() => setMenuOpen(false)}
-                    className="block px-4 py-2 text-sm text-ink-700 transition hover:bg-ink-50"
+                    className="block px-4 py-2 text-sm text-ink-700 transition hover:bg-white/[0.06] hover:text-white"
                   >
                     我的工作台
                   </Link>
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="block w-full px-4 py-2 text-left text-sm text-rose-600 transition hover:bg-rose-50"
+                    className="block w-full px-4 py-2 text-left text-sm text-rose-700 transition hover:bg-rose-500/10"
                   >
                     退出登录
                   </button>
@@ -699,50 +723,59 @@ function CityWorkspacePage() {
               )}
             </>
           ) : (
-            <Button size="sm" variant="ghost" onClick={() => navigate('/login')}>
+            <Button size="sm" variant="secondary" onClick={() => navigate('/login')}>
               登录
             </Button>
           )}
         </div>
-      </header>
+      </div>
 
-      <div className="flex min-h-0 flex-1">
-        {/* 左侧面板 */}
+      {/* ---------- 左侧悬浮工作面板 ---------- */}
+      <div className="pointer-events-none absolute bottom-4 left-3 top-[4.25rem] z-20 flex w-[calc(100%-1.5rem)] max-w-[400px] flex-col gap-3 sm:left-4 sm:top-[4.75rem]">
+        {/* 搜索命令条 */}
+        <div className="pointer-events-auto glass-strong rounded-2xl p-3.5 shadow-float">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-ink-500">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-cyan-300 animate-pulse-glow" aria-hidden="true" />
+              {isImportMode ? '筛选导入房源' : '自然语言找房'}
+            </h2>
+            <button
+              type="button"
+              onClick={() => setPanelOpen((open) => !open)}
+              aria-label={panelOpen ? '收起结果面板' : '展开结果面板'}
+              aria-expanded={panelOpen}
+              className="rounded-full p-1.5 text-ink-400 transition hover:bg-white/[0.08] hover:text-white"
+            >
+              <svg
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className={['h-4 w-4 transition-transform duration-300', panelOpen ? '' : 'rotate-180'].join(' ')}
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M14.77 12.78a.75.75 0 0 1-1.06 0L10 9.06l-3.72 3.72a.75.75 0 1 1-1.06-1.06l4.25-4.25a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          </div>
+          <SearchPanel
+            value={queryText}
+            onChange={setQueryText}
+            onSearch={() => runSearch({ engine: 'intent' })}
+            onAgentSearch={() => runSearch({ engine: 'agent' })}
+            loading={searchLoading}
+            engine={search.engine}
+            isImportMode={isImportMode}
+            city={city}
+          />
+        </div>
+
+        {/* 结果面板 */}
         {panelOpen ? (
-          <aside className="flex w-full max-w-[420px] shrink-0 flex-col border-r border-ink-100 bg-white sm:w-[420px]">
-            <div className="border-b border-ink-100 p-4">
-              <div className="mb-2.5 flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-ink-900">
-                  {isImportMode ? '筛选导入房源' : '描述你的租房需求'}
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => setPanelOpen(false)}
-                  aria-label="收起面板"
-                  className="rounded-full p-1.5 text-ink-400 transition hover:bg-ink-100 hover:text-ink-700"
-                >
-                  <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4" aria-hidden="true">
-                    <path
-                      fillRule="evenodd"
-                      d="M12.78 5.22a.75.75 0 0 1 0 1.06L9.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
-              </div>
-              <SearchPanel
-                value={queryText}
-                onChange={setQueryText}
-                onSearch={() => runSearch({ engine: 'intent' })}
-                onAgentSearch={() => runSearch({ engine: 'agent' })}
-                loading={searchLoading}
-                engine={search.engine}
-                isImportMode={isImportMode}
-                city={city}
-              />
-            </div>
-
-            <div className="flex-1 space-y-4 overflow-y-auto p-4 scrollbar-thin">
+          <div className="pointer-events-auto glass-strong flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl shadow-float">
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 scrollbar-thin">
               {isImportMode && (
                 <div className="rounded-xl bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-800 ring-1 ring-amber-100">
                   当前仅分析你导入的房源，不会查询平台房源库。
@@ -755,7 +788,7 @@ function CityWorkspacePage() {
 
               {/* 摘要 / agent 意图 / 警告 / 步骤条（仅平台模式且有结果时） */}
               {!isImportMode && search.status === 'ready' && result?.summary && !needsClarification && (
-                <p className="rounded-xl bg-brand-50/60 px-3 py-2.5 text-xs leading-5 text-ink-700 ring-1 ring-brand-100">
+                <p className="rounded-xl bg-brand-500/10 px-3 py-2.5 text-xs leading-5 text-ink-800 ring-1 ring-brand-400/20">
                   {result.summary}
                 </p>
               )}
@@ -805,11 +838,15 @@ function CityWorkspacePage() {
               {showList && (
                 <>
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs font-medium text-ink-500">
+                    <p className="font-mono text-xs font-medium text-ink-500">
                       共 {isImportMode ? listings.length : toNumber(result?.total, listings.length) || listings.length} 条
-                      · 第 {safePage}/{totalPages} 页
+                      · {safePage}/{totalPages} 页
                     </p>
-                    <div className="inline-flex rounded-full bg-ink-100 p-0.5" role="group" aria-label="地图 marker 范围">
+                    <div
+                      className="inline-flex rounded-full bg-black/30 p-0.5 ring-1 ring-inset ring-white/[0.06]"
+                      role="group"
+                      aria-label="地图 marker 范围"
+                    >
                       {[
                         { value: 'page', label: '当前页' },
                         { value: 'all', label: '前100条' },
@@ -822,7 +859,7 @@ function CityWorkspacePage() {
                           className={[
                             'rounded-full px-2.5 py-1 text-xs font-medium transition',
                             markerScope === option.value
-                              ? 'bg-white text-ink-900 shadow-sm'
+                              ? 'bg-white/[0.12] text-white shadow-sm'
                               : 'text-ink-500 hover:text-ink-800',
                           ].join(' ')}
                         >
@@ -857,7 +894,7 @@ function CityWorkspacePage() {
                       >
                         上一页
                       </Button>
-                      <span className="text-xs text-ink-500">
+                      <span className="font-mono text-xs text-ink-500">
                         {safePage} / {totalPages}
                       </span>
                       <Button
@@ -874,70 +911,46 @@ function CityWorkspacePage() {
                 </>
               )}
             </div>
-          </aside>
+          </div>
         ) : (
-          <div className="flex w-12 shrink-0 flex-col items-center gap-3 border-r border-ink-100 bg-white py-3">
+          listings.length > 0 && (
             <button
               type="button"
               onClick={() => setPanelOpen(true)}
-              aria-label="展开面板"
-              className="rounded-full p-1.5 text-ink-400 transition hover:bg-ink-100 hover:text-ink-700"
+              className="pointer-events-auto glass-strong flex items-center gap-2 self-start rounded-full px-3.5 py-2 text-xs font-medium text-ink-700 shadow-float transition hover:text-white hover:ring-white/25"
             >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4" aria-hidden="true">
-                <path
-                  fillRule="evenodd"
-                  d="M7.22 14.78a.75.75 0 0 1 0-1.06L10.94 10 7.22 6.28a.75.75 0 1 1 1.06-1.06l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0Z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
-            {listings.length > 0 && (
-              <span className="rounded-full bg-brand-50 px-1.5 py-0.5 text-[10px] font-semibold text-brand-700">
+              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-gradient px-1.5 font-mono text-[10px] font-semibold text-white">
                 {listings.length}
               </span>
-            )}
-          </div>
+              查看结果列表
+            </button>
+          )
         )}
-
-        {/* 右侧地图 */}
-        <main className="relative min-w-0 flex-1">
-          <div ref={containerRef} className="absolute inset-0" role="application" aria-label={`${city}房源地图`} />
-
-          {!mapReady && !mapError && (
-            <div className="absolute inset-0 flex items-center justify-center bg-ink-50">
-              <LoadingBlock text="正在加载高德地图…" className="py-0" />
-            </div>
-          )}
-          {mapError && (
-            <div className="absolute inset-0 flex items-center justify-center bg-ink-50">
-              <EmptyState
-                icon="🛰️"
-                title="地图加载失败"
-                description="请检查网络或高德地图 Key 配置后刷新页面重试。"
-              />
-            </div>
-          )}
-
-          {(searchLoading || resolvingPoint) && (
-            <div className="absolute left-1/2 top-4 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-xs font-medium text-ink-700 shadow-float ring-1 ring-ink-100">
-              <Spinner className="h-3.5 w-3.5" />
-              {resolvingPoint ? '正在解析地图选点…' : search.engine === 'agent' ? 'Agent 深度搜索中…' : '正在搜索房源…'}
-            </div>
-          )}
-
-          {isImportMode && mapReady && (
-            <div className="absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full bg-amber-50/95 px-4 py-2 text-xs font-medium text-amber-800 shadow-card ring-1 ring-amber-200">
-              自有房源模式：地图仅展示你导入的房源
-            </div>
-          )}
-
-          {!isImportMode && mapReady && search.status === 'idle' && (
-            <div className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 rounded-full bg-white/95 px-4 py-2 text-xs text-ink-500 shadow-card ring-1 ring-ink-100">
-              点击地图任意位置，以该点为中心搜索周边房源
-            </div>
-          )}
-        </main>
       </div>
+
+      {/* ---------- 状态提示 ---------- */}
+      {(searchLoading || resolvingPoint) && (
+        <div className="glass-strong absolute left-1/2 top-16 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full px-4 py-2 text-xs font-medium text-ink-800 shadow-float sm:top-[4.75rem]">
+          <Spinner className="h-3.5 w-3.5" />
+          {resolvingPoint ? '正在解析地图选点…' : search.engine === 'agent' ? 'Agent 深度搜索中…' : '正在搜索房源…'}
+        </div>
+      )}
+
+      {isImportMode && mapReady && (
+        <div className="glass-strong absolute bottom-6 left-1/2 z-10 -translate-x-1/2 rounded-full px-4 py-2 text-xs font-medium text-amber-700 shadow-float">
+          自有房源模式：地图仅展示你导入的房源
+        </div>
+      )}
+
+      {!isImportMode && mapReady && search.status === 'idle' && !searchLoading && !resolvingPoint && (
+        <div className="glass-strong absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full px-4 py-2 text-xs text-ink-600 shadow-float">
+          <span className="relative flex h-2 w-2" aria-hidden="true">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-60" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-300" />
+          </span>
+          点击地图任意位置，以该点为中心搜索周边房源
+        </div>
+      )}
     </div>
   )
 }

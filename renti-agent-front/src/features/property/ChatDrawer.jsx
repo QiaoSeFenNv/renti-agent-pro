@@ -25,7 +25,7 @@ function ChatMessage({ message }) {
       <div
         className={[
           'max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-6',
-          isUser ? 'bg-brand-600 text-white' : 'bg-white text-ink-800 shadow-card ring-1 ring-ink-100',
+          isUser ? 'bg-brand-600 text-white' : 'bg-white/[0.06] text-ink-800 ring-1 ring-white/10',
         ].join(' ')}
       >
         <p className="whitespace-pre-wrap break-words">{message.content}</p>
@@ -234,10 +234,10 @@ function ChatDrawer({ listingId, open, onClose, contextTitle, contextMeta }) {
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-label="房源问答">
-      <div className="absolute inset-0 bg-ink-950/30 backdrop-blur-[2px] animate-fade-in" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose} />
       <section className="relative flex h-full w-full max-w-md flex-col bg-ink-50 shadow-float animate-fade-in">
         {/* 头部 */}
-        <header className="flex items-start justify-between gap-2 border-b border-ink-100 bg-white px-4 py-3.5">
+        <header className="flex items-start justify-between gap-2 border-b border-white/[0.06] bg-surface-raised px-4 py-3.5">
           <div className="min-w-0">
             <h2 className="text-sm font-semibold text-ink-900">房源问答</h2>
             <p className="mt-0.5 truncate text-xs text-ink-400">
@@ -306,7 +306,7 @@ function ChatDrawer({ listingId, open, onClose, contextTitle, contextMeta }) {
                     setInput(question)
                     inputRef.current?.focus()
                   }}
-                  className="block w-full rounded-xl bg-white px-3 py-2 text-left text-xs text-ink-600 shadow-card ring-1 ring-ink-100 transition hover:ring-brand-200"
+                  className="block w-full rounded-xl bg-white/[0.05] px-3 py-2 text-left text-xs text-ink-600 ring-1 ring-white/10 transition hover:text-ink-900 hover:ring-brand-400/40"
                 >
                   {question}
                 </button>
@@ -326,7 +326,7 @@ function ChatDrawer({ listingId, open, onClose, contextTitle, contextMeta }) {
 
           {sending && (
             <div className="flex justify-start" aria-label="AI 正在输入">
-              <div className="flex items-center gap-1.5 rounded-2xl bg-white px-4 py-3 shadow-card ring-1 ring-ink-100">
+              <div className="flex items-center gap-1.5 rounded-2xl bg-white/[0.06] px-4 py-3 ring-1 ring-white/10">
                 {[0, 1, 2].map((index) => (
                   <span
                     key={index}
@@ -340,7 +340,7 @@ function ChatDrawer({ listingId, open, onClose, contextTitle, contextMeta }) {
         </div>
 
         {/* 输入区 */}
-        <div className="border-t border-ink-100 bg-white px-4 py-3">
+        <div className="border-t border-white/[0.06] bg-surface-raised px-4 py-3">
           {sendError && <p className="mb-2 text-xs text-rose-600">{sendError}</p>}
           <div className="flex items-end gap-2">
             <label htmlFor="property-chat-input" className="sr-only">
@@ -354,7 +354,7 @@ function ChatDrawer({ listingId, open, onClose, contextTitle, contextMeta }) {
               onChange={(event) => setInput(event.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="询问通勤、价格、风险或数据来源…"
-              className="flex-1 resize-none rounded-xl border-0 bg-ink-50 px-3 py-2 text-sm leading-6 text-ink-900 ring-1 ring-inset ring-ink-200 transition placeholder:text-ink-300 focus:bg-white focus:ring-2 focus:ring-brand-500"
+              className="flex-1 resize-none rounded-xl border-0 bg-black/30 px-3 py-2 text-sm leading-6 text-ink-900 ring-1 ring-inset ring-white/10 transition placeholder:text-ink-300 focus:bg-black/45 focus:ring-2 focus:ring-brand-500/80"
             />
             <Button size="sm" onClick={sendMessage} loading={sending} disabled={!input.trim() || sending} aria-label="发送">
               发送

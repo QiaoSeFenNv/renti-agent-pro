@@ -1,5 +1,11 @@
 /**
- * 基础按钮：统一全站按钮形态。
+ * 基础按钮：统一全站按钮形态（黑色科技风）。
+ *
+ * primary   品牌渐变 + 辉光 + hover 光泽扫过，唯一的高权重行动点
+ * secondary 玻璃拟态描边按钮，次级操作
+ * ghost     纯文字弱按钮
+ * danger    破坏性操作
+ * dark      反白按钮（暗底上的最高对比，如 hero 次按钮）
  *
  * @param {object} props
  * @param {'primary'|'secondary'|'ghost'|'danger'|'dark'} [props.variant]
@@ -19,16 +25,27 @@ function Button({
   ...rest
 }) {
   const variants = {
-    primary: 'bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 shadow-sm',
-    secondary: 'bg-white text-ink-700 ring-1 ring-inset ring-ink-200 hover:bg-ink-50 hover:text-ink-900',
-    ghost: 'text-ink-600 hover:bg-ink-100 hover:text-ink-900',
-    danger: 'bg-rose-600 text-white hover:bg-rose-700',
-    dark: 'bg-ink-950 text-white hover:bg-ink-800',
+    primary: [
+      'shine bg-brand-gradient text-white shadow-glow',
+      'hover:shadow-glow-lg hover:brightness-110 hover:-translate-y-px',
+      'active:translate-y-0 active:brightness-95',
+    ].join(' '),
+    secondary: [
+      'bg-white/[0.06] text-ink-800 ring-1 ring-inset ring-white/10 backdrop-blur',
+      'hover:bg-white/[0.1] hover:text-white hover:ring-white/25',
+      'active:bg-white/[0.08]',
+    ].join(' '),
+    ghost: 'text-ink-500 hover:bg-white/[0.06] hover:text-ink-900',
+    danger: [
+      'bg-rose-600 text-white shadow-[0_0_20px_-6px_rgba(244,63,94,0.6)]',
+      'hover:bg-rose-500 hover:-translate-y-px active:translate-y-0',
+    ].join(' '),
+    dark: 'bg-ink-950 text-surface-deep hover:bg-white active:bg-ink-800',
   }
   const sizes = {
-    sm: 'h-8 px-3 text-xs gap-1.5',
-    md: 'h-10 px-4 text-sm gap-2',
-    lg: 'h-12 px-6 text-base gap-2',
+    sm: 'h-8 px-3.5 text-xs gap-1.5',
+    md: 'h-10 px-5 text-sm gap-2',
+    lg: 'h-12 px-7 text-base gap-2',
   }
 
   return (
@@ -36,9 +53,10 @@ function Button({
       type={type}
       disabled={disabled || loading}
       className={[
-        'inline-flex items-center justify-center rounded-full font-medium transition-colors duration-150',
-        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500',
-        'disabled:cursor-not-allowed disabled:opacity-50',
+        'relative inline-flex select-none items-center justify-center overflow-hidden rounded-full font-medium',
+        'transition-all duration-200 ease-out',
+        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400',
+        'disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none disabled:hover:translate-y-0 disabled:hover:brightness-100',
         variants[variant] ?? variants.primary,
         sizes[size] ?? sizes.md,
         block ? 'w-full' : '',
@@ -52,7 +70,7 @@ function Button({
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
         </svg>
       )}
-      {children}
+      <span className="relative z-10 inline-flex items-center gap-[inherit]">{children}</span>
     </button>
   )
 }

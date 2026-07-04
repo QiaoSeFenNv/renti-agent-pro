@@ -45,11 +45,11 @@ function CommuteMapCard({ commuteMap }) {
       const element = document.createElement('div')
       element.className = 'flex flex-col items-center'
       element.innerHTML = `
-        <span class="whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium text-white shadow-float ${
-          tone === 'target' ? 'bg-ink-950' : 'bg-brand-600'
+        <span class="whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium text-white shadow-float ring-1 backdrop-blur ${
+          tone === 'target' ? 'bg-surface-deep/90 ring-cyan-400/40' : 'bg-brand-600 ring-white/20'
         }">${escapeHtml(label)}</span>
-        <span class="mt-1 h-2.5 w-2.5 rounded-full border-2 border-white shadow ${
-          tone === 'target' ? 'bg-ink-950' : 'bg-brand-600'
+        <span class="mt-1 h-2.5 w-2.5 rounded-full border-2 border-surface-deep shadow ${
+          tone === 'target' ? 'bg-cyan-300' : 'bg-brand-400'
         }"></span>`
       return element
     }
@@ -82,7 +82,7 @@ function CommuteMapCard({ commuteMap }) {
           [toNumber(target.longitude), toNumber(target.latitude)],
           [toNumber(property.longitude), toNumber(property.latitude)],
         ],
-        strokeColor: '#1d60f1',
+        strokeColor: '#477bff',
         strokeWeight: 3,
         strokeOpacity: 0.85,
         strokeStyle: 'dashed',
@@ -96,7 +96,7 @@ function CommuteMapCard({ commuteMap }) {
     amenities.filter(isCoordPoint).forEach((amenity) => {
       const element = document.createElement('div')
       element.className =
-        'whitespace-nowrap rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-medium text-ink-600 shadow-card ring-1 ring-ink-100'
+        'whitespace-nowrap rounded-full bg-surface-deep/85 px-2 py-0.5 text-[10px] font-medium text-ink-700 ring-1 ring-white/15 backdrop-blur'
       element.textContent = `${amenity.label || '配套'}${
         Number.isFinite(toNumber(amenity.distanceMeters)) ? ` · ${formatDistance(amenity.distanceMeters)}` : ''
       }`
@@ -133,7 +133,7 @@ function CommuteMapCard({ commuteMap }) {
         </p>
       )}
       {hasMap ? (
-        <div className="relative h-64 overflow-hidden rounded-xl ring-1 ring-ink-100">
+        <div className="relative h-64 overflow-hidden rounded-xl ring-1 ring-white/[0.08]">
           <div ref={containerRef} className="absolute inset-0" role="application" aria-label="通勤直线距离地图" />
           {error && (
             <div className="absolute inset-0 flex items-center justify-center bg-ink-50">
@@ -141,7 +141,7 @@ function CommuteMapCard({ commuteMap }) {
             </div>
           )}
           {Number.isFinite(distanceMeters) && distanceMeters > 0 && (
-            <div className="absolute bottom-3 left-3 rounded-full bg-white/95 px-3 py-1.5 text-xs font-medium text-ink-700 shadow-card ring-1 ring-ink-100">
+            <div className="absolute bottom-3 left-3 rounded-full bg-surface/85 px-3 py-1.5 font-mono text-xs font-medium text-ink-800 ring-1 ring-white/10 backdrop-blur">
               直线距离约 {formatDistance(distanceMeters)}
             </div>
           )}

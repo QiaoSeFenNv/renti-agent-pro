@@ -47,19 +47,19 @@ function Drawer({ open, onClose, title, subtitle, size = 'md', children, footer 
     <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={title}>
       <div
         className={[
-          'absolute inset-0 bg-ink-950/40 backdrop-blur-sm transition-opacity duration-200',
+          'absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-200',
           visible ? 'opacity-100' : 'opacity-0',
         ].join(' ')}
         onClick={onClose}
       />
       <aside
         className={[
-          'absolute inset-y-0 right-0 flex flex-col bg-white shadow-float transition-transform duration-250 ease-out',
+          'absolute inset-y-0 right-0 flex flex-col bg-surface-raised shadow-float ring-1 ring-white/10 transition-transform duration-250 ease-out',
           width,
           visible ? 'translate-x-0' : 'translate-x-full',
         ].join(' ')}
       >
-        <header className="flex items-start justify-between gap-3 border-b border-ink-100 px-5 py-4">
+        <header className="flex items-start justify-between gap-3 border-b border-white/[0.06] px-5 py-4">
           <div className="min-w-0">
             <h3 className="truncate text-base font-semibold text-ink-900">{title}</h3>
             {subtitle && <div className="mt-0.5 text-xs text-ink-400">{subtitle}</div>}
@@ -68,7 +68,7 @@ function Drawer({ open, onClose, title, subtitle, size = 'md', children, footer 
             type="button"
             onClick={onClose}
             aria-label="关闭"
-            className="rounded-full p-1.5 text-ink-400 transition hover:bg-ink-100 hover:text-ink-700"
+            className="rounded-full p-1.5 text-ink-400 transition hover:bg-white/[0.08] hover:text-ink-900"
           >
             <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
@@ -77,7 +77,7 @@ function Drawer({ open, onClose, title, subtitle, size = 'md', children, footer 
         </header>
         <div className="flex-1 overflow-y-auto px-5 py-4 scrollbar-thin">{children}</div>
         {footer && (
-          <footer className="flex justify-end gap-2 border-t border-ink-100 px-5 py-3.5">{footer}</footer>
+          <footer className="flex justify-end gap-2 border-t border-white/[0.06] px-5 py-3.5">{footer}</footer>
         )}
       </aside>
     </div>,

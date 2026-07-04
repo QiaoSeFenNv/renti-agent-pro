@@ -129,7 +129,7 @@ function FavoritesTab() {
                       {listing.title || '未命名房源'}
                     </p>
                     <p className="mt-1 line-clamp-1 text-xs text-ink-500">{location || '位置信息待补充'}</p>
-                    {price && <p className="mt-1.5 text-sm font-semibold text-brand-600">{price}</p>}
+                    {price && <p className="mt-1.5 font-mono text-sm font-semibold text-brand-300">{price}</p>}
                   </div>
                 </button>
                 <div className="mt-auto flex items-center justify-between px-4 pb-3 pt-2">
@@ -253,7 +253,7 @@ function HistoryTab() {
               type="button"
               onClick={() => openHistory(entry)}
               aria-label={`重新搜索：${entry.queryText || entry.centerLabel || '历史查询'}`}
-              className="w-full rounded-2xl bg-white p-4 text-left shadow-card ring-1 ring-ink-100/60 transition hover:-translate-y-0.5 hover:shadow-float"
+              className="w-full rounded-2xl bg-white/[0.04] p-4 text-left ring-1 ring-white/[0.07] transition duration-300 hover:-translate-y-1 hover:bg-white/[0.07] hover:shadow-glow"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-sm font-semibold text-ink-900">
@@ -403,7 +403,7 @@ function ImportsTab() {
               onChange={(event) => setJsonText(event.target.value)}
               rows={6}
               placeholder='{"id": "demo-1", "title": "两室一厅", "price": "6500 元/月", "location": "徐汇区"}'
-              className="w-full rounded-xl border-0 bg-white px-3.5 py-3 font-mono text-xs text-ink-900 shadow-sm ring-1 ring-inset ring-ink-200 transition placeholder:text-ink-300 focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-xl border-0 bg-black/30 px-3.5 py-3 font-mono text-xs text-ink-900 ring-1 ring-inset ring-white/10 transition placeholder:text-ink-300 focus:bg-black/45 focus:ring-2 focus:ring-brand-500/80"
             />
             {importState.message && (
               <p
@@ -586,8 +586,8 @@ function NotificationsTab() {
           <li key={item.id}>
             <div
               className={[
-                'rounded-2xl bg-white p-4 shadow-card ring-1',
-                item.isRead ? 'ring-ink-100/60 opacity-75' : 'ring-brand-200',
+                'rounded-2xl bg-surface p-4 shadow-card ring-1',
+                item.isRead ? 'ring-white/[0.06] opacity-70' : 'ring-brand-400/40',
               ].join(' ')}
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -824,7 +824,7 @@ function SettingsTab() {
                   type="checkbox"
                   checked={Boolean(settings?.autoOpenResults ?? true)}
                   onChange={(event) => updateField('autoOpenResults', event.target.checked)}
-                  className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500"
+                  className="h-4 w-4 rounded accent-brand-500"
                 />
                 搜索后自动展开结果面板
               </label>
@@ -833,7 +833,7 @@ function SettingsTab() {
                   type="checkbox"
                   checked={Boolean(settings?.saveSearchHistory ?? true)}
                   onChange={(event) => updateField('saveSearchHistory', event.target.checked)}
-                  className="h-4 w-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500"
+                  className="h-4 w-4 rounded accent-brand-500"
                 />
                 保存搜索历史
               </label>
@@ -975,12 +975,13 @@ function UserWorkspacePage() {
     <SiteLayout>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         <div className="animate-fade-up">
-          <h1 className="text-3xl font-semibold tracking-tight text-ink-900">我的工作台</h1>
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-brand-400">Dashboard</p>
+          <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink-900">我的工作台</h1>
           <p className="mt-2 text-sm text-ink-500">管理收藏、搜索历史、导入房源与个人偏好。</p>
         </div>
 
         <div
-          className="mt-6 flex gap-1 overflow-x-auto rounded-full bg-white p-1 shadow-card ring-1 ring-ink-100/60 sm:inline-flex"
+          className="mt-6 flex gap-1 overflow-x-auto rounded-full bg-surface/80 p-1 shadow-card ring-1 ring-white/[0.08] backdrop-blur sm:inline-flex"
           role="tablist"
           aria-label="工作台分区"
         >
@@ -994,8 +995,8 @@ function UserWorkspacePage() {
               className={[
                 'shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors',
                 activeTab === tab.key
-                  ? 'bg-brand-600 text-white shadow-sm'
-                  : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900',
+                  ? 'bg-brand-gradient text-white shadow-glow'
+                  : 'text-ink-500 hover:bg-white/[0.06] hover:text-ink-900',
               ].join(' ')}
             >
               {tab.label}

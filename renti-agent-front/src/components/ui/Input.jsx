@@ -1,7 +1,7 @@
 import { useId } from 'react'
 
 /**
- * 文本输入框（含可选 label 与错误提示）。
+ * 文本输入框（含可选 label 与错误提示）：暗色内嵌场，聚焦时品牌辉光。
  */
 export function TextField({
   label,
@@ -24,16 +24,16 @@ export function TextField({
       <input
         id={id}
         className={[
-          'h-11 w-full rounded-xl border-0 bg-white px-3.5 text-sm text-ink-900 shadow-sm ring-1 ring-inset transition',
-          'placeholder:text-ink-300 focus:ring-2 focus:ring-brand-500',
-          error ? 'ring-rose-300 focus:ring-rose-500' : 'ring-ink-200',
+          'h-11 w-full rounded-xl border-0 bg-black/30 px-3.5 text-sm text-ink-900 ring-1 ring-inset transition duration-200',
+          'placeholder:text-ink-300 focus:bg-black/45 focus:shadow-glow focus:ring-2',
+          error ? 'ring-rose-500/50 focus:ring-rose-500' : 'ring-white/10 focus:ring-brand-500/80',
           inputClassName,
         ].join(' ')}
         aria-invalid={Boolean(error)}
         {...rest}
       />
       {error ? (
-        <p className="mt-1.5 text-xs text-rose-600">{error}</p>
+        <p className="mt-1.5 text-xs text-rose-700">{error}</p>
       ) : hint ? (
         <p className="mt-1.5 text-xs text-ink-400">{hint}</p>
       ) : null}
@@ -55,15 +55,15 @@ export function SelectField({ label, error, className = '', id: idProp, children
       <select
         id={id}
         className={[
-          'h-11 w-full rounded-xl border-0 bg-white px-3 text-sm text-ink-900 shadow-sm ring-1 ring-inset transition',
-          'focus:ring-2 focus:ring-brand-500',
-          error ? 'ring-rose-300' : 'ring-ink-200',
+          'h-11 w-full rounded-xl border-0 bg-black/30 px-3 text-sm text-ink-900 ring-1 ring-inset transition duration-200',
+          'focus:bg-black/45 focus:shadow-glow focus:ring-2',
+          error ? 'ring-rose-500/50' : 'ring-white/10 focus:ring-brand-500/80',
         ].join(' ')}
         {...rest}
       >
         {children}
       </select>
-      {error && <p className="mt-1.5 text-xs text-rose-600">{error}</p>}
+      {error && <p className="mt-1.5 text-xs text-rose-700">{error}</p>}
     </div>
   )
 }

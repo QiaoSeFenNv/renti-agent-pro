@@ -234,7 +234,7 @@ function PropertyDetailPage() {
           </div>
 
           <aside className="animate-fade-up">
-            <section className="rounded-2xl bg-white p-5 shadow-card ring-1 ring-ink-100/60 lg:sticky lg:top-20">
+            <section className="rounded-2xl bg-surface p-5 shadow-card ring-1 ring-white/[0.06] lg:sticky lg:top-20">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <h1 className="text-lg font-semibold leading-7 text-ink-900">{detail.title}</h1>
@@ -309,7 +309,7 @@ function PropertyDetailPage() {
         )}
 
         {/* AI 深度分析 + 洞察 */}
-        <section className="mt-6 rounded-2xl bg-white p-5 shadow-card ring-1 ring-ink-100/60" aria-label="AI 深度分析">
+        <section className="mt-6 rounded-2xl bg-surface p-5 shadow-card ring-1 ring-white/[0.06]" aria-label="AI 深度分析">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-sm font-semibold text-ink-900">AI 深度分析</h2>
@@ -400,7 +400,7 @@ function PropertyDetailPage() {
 
         {/* 通勤地图 + 通勤条目 */}
         {(detail.commuteMap || detail.commute.length > 0) && (
-          <section className="mt-6 rounded-2xl bg-white p-5 shadow-card ring-1 ring-ink-100/60" aria-label="通勤信息">
+          <section className="mt-6 rounded-2xl bg-surface p-5 shadow-card ring-1 ring-white/[0.06]" aria-label="通勤信息">
             <h2 className="text-sm font-semibold text-ink-900">通勤与周边</h2>
             <div className="mt-3 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
               <div className="min-w-0">
@@ -429,7 +429,7 @@ function PropertyDetailPage() {
                       <span
                         className={[
                           'shrink-0 text-sm font-medium',
-                          item.tone === 'primary' ? 'text-brand-600' : 'text-ink-500',
+                          item.tone === 'primary' ? 'text-brand-300' : 'text-ink-500',
                         ].join(' ')}
                       >
                         {item.value}
@@ -455,7 +455,7 @@ function PropertyDetailPage() {
         type="button"
         onClick={() => setChatOpen(true)}
         aria-label="打开房源问答"
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full bg-brand-600 px-5 py-3 text-sm font-medium text-white shadow-float transition hover:bg-brand-700"
+        className="shine fixed bottom-6 right-6 z-40 flex items-center gap-2 overflow-hidden rounded-full bg-brand-gradient px-5 py-3 text-sm font-medium text-white shadow-glow-lg transition duration-200 hover:-translate-y-0.5 hover:brightness-110"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-4 w-4" aria-hidden="true">
           <path
@@ -481,7 +481,7 @@ function PropertyDetailPage() {
 /** 顶部面包屑：返回工作台 + 品牌 */
 function PageHeader({ backTo, lastCity }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-ink-100 bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-surface-deep/70 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
         <nav className="flex min-w-0 items-center gap-2 text-sm" aria-label="面包屑">
           <Link
