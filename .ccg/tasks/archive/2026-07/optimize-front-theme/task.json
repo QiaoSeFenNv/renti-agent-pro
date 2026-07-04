@@ -1,0 +1,12 @@
+{
+  "id": "optimize-front-theme",
+  "title": "优化前端主题切换与暗色可读性",
+  "status": "completed",
+  "complexity": "M",
+  "risk": "medium",
+  "domain": "frontend",
+  "currentPhase": "completed",
+  "nextAction": "归档任务目录",
+  "createdAt": "2026-07-04T00:00:00+08:00",
+  "branch": "master"
+}

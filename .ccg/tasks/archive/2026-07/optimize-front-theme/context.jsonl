@@ -1,0 +1,6 @@
+{"path":"renti-agent-front/tailwind.config.js","reason":"Defines global color tokens currently inverted for the dark theme."}
+{"path":"renti-agent-front/src/styles/index.css","reason":"Defines base background, color-scheme, glass utilities, scrollbar, and map overlay CSS."}
+{"path":"renti-agent-front/src/App.jsx","reason":"Root app component suitable for installing persisted theme behavior."}
+{"path":"renti-agent-front/src/components/site/SiteHeader.jsx","reason":"Main user-facing header where a theme switch can live."}
+{"path":"renti-agent-front/src/layouts/AdminLayout.jsx","reason":"Admin shell should also remain readable under theme tokens."}
+{"path":"renti-agent-front/docs/DESIGN-SPEC.md","reason":"Project frontend design constraints and visual language."}
