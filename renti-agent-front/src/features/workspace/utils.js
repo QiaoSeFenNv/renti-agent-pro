@@ -115,6 +115,7 @@ export function normalizeMarker(marker = {}) {
     latitude: toNumber(readField(marker, 'latitude', 'lat')),
     rentPrice,
     priceLabel: Number.isFinite(rentPrice) ? formatPrice(rentPrice) : '房源',
+    distanceM: toNumber(readField(marker, 'distanceM', 'distance_m')),
     withinRadius: withinRadiusRaw !== false,
   }
 }

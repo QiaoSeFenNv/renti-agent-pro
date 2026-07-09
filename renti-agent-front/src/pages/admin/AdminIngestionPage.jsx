@@ -47,28 +47,42 @@ function PluginCard({ plugin, onFlash }) {
   const defaults = read(plugin, 'defaultOptions') ?? {}
   const scheduleOptions = read(schedule, 'options') ?? {}
   const merged = { ...defaults, ...scheduleOptions }
+  // 关键词型插件（如小红书渠道）：入参为 keyword/limit，而非 URL/分页
+  const keywordMode = Object.prototype.hasOwnProperty.call(defaults, 'keyword')
+  const supportsStop = Boolean(read(plugin, 'supportsStop'))
 
   const [form, setForm] = useState(() => ({
     url: read(merged, 'url', ''),
     pages: read(merged, 'pages', 1),
     geocode: read(merged, 'geocode') !== false,
     cleanupMissing: read(merged, 'cleanupMissing') !== false,
+    keyword: read(merged, 'keyword', '上海租房'),
+    limit: read(merged, 'limit', 12),
+    skipDetail: Boolean(read(merged, 'skipDetail')),
     scheduleEnabled: Boolean(read(schedule, 'enabled')),
     intervalMinutes: read(schedule, 'intervalMinutes', 1440),
   }))
   const [running, setRunning] = useState(false)
+  const [stopping, setStopping] = useState(false)
   const [savingSchedule, setSavingSchedule] = useState(false)
   const [error, setError] = useState(null)
   const [jobResult, setJobResult] = useState(null)
 
   const setField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
 
-  const options = () => ({
-    url: form.url,
-    pages: Number(form.pages) || 1,
-    geocode: form.geocode,
-    cleanupMissing: form.cleanupMissing,
-  })
+  const options = () =>
+    keywordMode
+      ? {
+          keyword: form.keyword.trim() || '上海租房',
+          limit: Math.max(1, Math.min(Number(form.limit) || 12, 50)),
+          skipDetail: form.skipDetail,
+        }
+      : {
+          url: form.url,
+          pages: Number(form.pages) || 1,
+          geocode: form.geocode,
+          cleanupMissing: form.cleanupMissing,
+        }
 
   const handleRun = async () => {
     setRunning(true)
@@ -77,11 +91,23 @@ function PluginCard({ plugin, onFlash }) {
     try {
       const result = await adminService.runCrawlerPlugin(pluginId, { options: options() })
       setJobResult(result)
-      onFlash('采集任务已执行')
+      onFlash(result?.ok === false ? '采集已结束（未成功）' : '采集任务已执行')
     } catch (err) {
       setError(err)
     } finally {
       setRunning(false)
+    }
+  }
+
+  const handleStop = async () => {
+    setStopping(true)
+    try {
+      const result = await adminService.stopCrawlerPlugin(pluginId)
+      onFlash(result?.stopped ? '已发送停止指令，采集进程正在终止' : '当前没有正在运行的采集任务')
+    } catch (err) {
+      setError(err)
+    } finally {
+      setStopping(false)
     }
   }
 
@@ -117,20 +143,51 @@ function PluginCard({ plugin, onFlash }) {
       <CardBody className="space-y-4">
         {error && <ErrorBar error={error} />}
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <TextField label="采集 URL" type="url" value={form.url} onChange={(e) => setField('url', e.target.value)} />
-          <TextField label="抓取页数" type="number" min="1" max="10" value={form.pages} onChange={(e) => setField('pages', e.target.value)} />
-        </div>
-        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-700">
-          <label className="flex items-center gap-2">
-            <input type="checkbox" className="h-4 w-4 rounded accent-brand-500" checked={form.geocode} onChange={(e) => setField('geocode', e.target.checked)} />
-            使用高德补坐标
-          </label>
-          <label className="flex items-center gap-2">
-            <input type="checkbox" className="h-4 w-4 rounded accent-brand-500" checked={form.cleanupMissing} onChange={(e) => setField('cleanupMissing', e.target.checked)} />
-            清理本次未命中的旧房源
-          </label>
-        </div>
+        {keywordMode ? (
+          <>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <TextField
+                className="sm:col-span-2"
+                label="搜索关键词"
+                value={form.keyword}
+                onChange={(e) => setField('keyword', e.target.value)}
+                placeholder="上海租房, 静安寺 整租"
+                hint="支持多个关键词，用逗号或空格分隔（最多 5 个）"
+              />
+              <TextField
+                label="每个关键词抓取条数"
+                type="number"
+                min="1"
+                max="50"
+                value={form.limit}
+                onChange={(e) => setField('limit', e.target.value)}
+              />
+            </div>
+            <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-700">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" className="h-4 w-4 rounded accent-brand-500" checked={form.skipDetail} onChange={(e) => setField('skipDetail', e.target.checked)} />
+                跳过笔记正文（更快，仅按标题提取字段）
+              </label>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <TextField label="采集 URL" type="url" value={form.url} onChange={(e) => setField('url', e.target.value)} />
+              <TextField label="抓取页数" type="number" min="1" max="10" value={form.pages} onChange={(e) => setField('pages', e.target.value)} />
+            </div>
+            <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-700">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" className="h-4 w-4 rounded accent-brand-500" checked={form.geocode} onChange={(e) => setField('geocode', e.target.checked)} />
+                使用高德补坐标
+              </label>
+              <label className="flex items-center gap-2">
+                <input type="checkbox" className="h-4 w-4 rounded accent-brand-500" checked={form.cleanupMissing} onChange={(e) => setField('cleanupMissing', e.target.checked)} />
+                清理本次未命中的旧房源
+              </label>
+            </div>
+          </>
+        )}
 
         <div className="flex flex-wrap items-end gap-3 rounded-xl bg-ink-50 p-3">
           <label className="flex items-center gap-2 text-sm text-ink-700">
@@ -162,6 +219,11 @@ function PluginCard({ plugin, onFlash }) {
           <Button size="sm" loading={running} onClick={handleRun}>
             运行采集
           </Button>
+          {supportsStop && running && (
+            <Button size="sm" variant="danger" loading={stopping} onClick={handleStop}>
+              停止采集
+            </Button>
+          )}
           {read(schedule, 'nextRunAt') && (
             <span className="text-xs text-ink-400">下次调度：{formatTime(read(schedule, 'nextRunAt'))}</span>
           )}

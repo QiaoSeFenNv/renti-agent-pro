@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import Badge from '../components/ui/Badge.jsx'
@@ -6,7 +6,7 @@ import Button from '../components/ui/Button.jsx'
 import SiteLayout from '../layouts/SiteLayout.jsx'
 import useReveal from '../hooks/useReveal.js'
 import useTypewriter from '../hooks/useTypewriter.js'
-import { cityService, subscriptionService } from '../services/cityService.js'
+import { cityService } from '../services/cityService.js'
 
 /** 打字机轮播的示例需求：即产品最核心的自然语言查询能力 */
 const DEMO_QUERIES = [
@@ -64,8 +64,18 @@ const WORKFLOW_STEPS = [
   { no: '03', title: '推荐与深度分析', description: '带理由的排序，逐套查看评估与数据来源。' },
 ]
 
+function cityKey(city, index) {
+  return city.slug || city.adcode || city.name || `city-${index}`
+}
+
+function cityStatusLabel(city) {
+  if (city.status === 'available') return '已开放'
+  if (city.status === 'data_pending') return '数据准备中'
+  return city.enabled === false ? '暂未开放' : '可进入'
+}
+
 /**
- * 首页：夜景 Hero（打字机命令条）+ 能力三卡 + 工作流程 + 热门城市 + 订阅。
+ * 首页：夜景 Hero（打字机命令条）+ 能力三卡 + 工作流程 + 热门城市。
  */
 function HomePage() {
   const navigate = useNavigate()
@@ -74,10 +84,7 @@ function HomePage() {
 
   const [heroBadge, setHeroBadge] = useState(null)
   const [hotCities, setHotCities] = useState([])
-  const [citiesFailed, setCitiesFailed] = useState(false)
-
-  const [subscribeEmail, setSubscribeEmail] = useState('')
-  const [subscribeState, setSubscribeState] = useState({ status: 'idle', message: '' })
+  const [citiesStatus, setCitiesStatus] = useState('loading')
 
   useEffect(() => {
     let cancelled = false
@@ -90,45 +97,26 @@ function HomePage() {
         /* 配置加载失败时使用默认文案，静默降级 */
       })
     cityService
-      .getCities({ limit: 8 })
+      .getCities({ limit: 16 })
       .then((data) => {
         if (cancelled) return
         const list = Array.isArray(data?.cities) ? data.cities : Array.isArray(data?.items) ? data.items : []
-        const enabled = list.filter((city) => city?.enabled ?? city?.status === 'available').slice(0, 8)
-        setHotCities(enabled)
-        setCitiesFailed(enabled.length === 0)
+        setHotCities(list.filter((city) => city?.enabled !== false && city?.status !== 'disabled'))
+        setCitiesStatus('ready')
       })
       .catch(() => {
-        if (!cancelled) setCitiesFailed(true)
+        if (!cancelled) setCitiesStatus('error')
       })
     return () => {
       cancelled = true
     }
   }, [])
 
-  const handleSubscribe = useCallback(
-    async (event) => {
-      event.preventDefault()
-      const email = subscribeEmail.trim()
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        setSubscribeState({ status: 'error', message: '请输入有效的邮箱地址' })
-        return
-      }
-      setSubscribeState({ status: 'loading', message: '' })
-      try {
-        await subscriptionService.subscribe(email)
-        setSubscribeState({ status: 'success', message: '订阅成功，新城市上线时会第一时间通知你。' })
-        setSubscribeEmail('')
-      } catch (err) {
-        setSubscribeState({ status: 'error', message: err.message || '订阅失败，请稍后重试。' })
-      }
-    },
-    [subscribeEmail],
-  )
-
   const scrollToWorkflow = () => {
     document.getElementById('workflow')?.scrollIntoView({ behavior: 'smooth' })
   }
+
+  const scrollingCities = hotCities.length > 0 ? [hotCities, hotCities] : []
 
   return (
     <SiteLayout>
@@ -265,7 +253,7 @@ function HomePage() {
         </section>
 
         {/* ---------- 工作流程 ---------- */}
-        <section id="workflow" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-24 sm:px-6" aria-label="工作流程">
+        <section id="workflow" className="mx-auto max-w-7xl scroll-mt-24 px-4 pb-16 pt-20 sm:px-6" aria-label="工作流程">
           <div className="reveal">
             <p className="text-center font-mono text-xs uppercase tracking-[0.3em] text-brand-400">Workflow</p>
             <h2 className="mt-3 text-center font-display text-2xl font-semibold tracking-tight text-ink-900 sm:text-3xl">
@@ -291,106 +279,93 @@ function HomePage() {
         </section>
 
         {/* ---------- 热门城市 ---------- */}
-        {!citiesFailed && hotCities.length > 0 && (
-          <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6" aria-label="热门城市">
-            <div className="reveal flex items-end justify-between">
-              <div>
-                <p className="font-mono text-xs uppercase tracking-[0.3em] text-brand-400">Cities</p>
-                <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-ink-900">热门城市</h2>
-              </div>
-              <Link
-                to="/cities"
-                className="group inline-flex items-center gap-1 text-sm font-medium text-brand-300 transition hover:text-white"
-              >
-                全部城市
-                <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 transition group-hover:translate-x-0.5" aria-hidden="true">
-                  <path
-                    fillRule="evenodd"
-                    d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </Link>
+        <section className="mx-auto max-w-7xl px-4 pb-14 sm:px-6" aria-label="热门城市">
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.3em] text-brand-400">Cities</p>
+              <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-ink-900">热门城市</h2>
             </div>
-            <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {hotCities.map((city, index) => (
-                <li key={city.name} className="reveal" style={{ transitionDelay: `${index * 45}ms` }}>
-                  <Link
-                    to={`/city/${encodeURIComponent(city.name)}`}
-                    className="glass group block rounded-2xl p-4 transition duration-300 hover:-translate-y-1 hover:shadow-glow hover:ring-brand-400/40"
-                    aria-label={`进入${city.name}工作台`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <p className="text-base font-semibold text-ink-900 transition group-hover:text-white">{city.name}</p>
-                      <svg
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        className="h-4 w-4 text-ink-300 opacity-0 transition duration-300 group-hover:translate-x-0.5 group-hover:text-brand-300 group-hover:opacity-100"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <p className="mt-1 truncate font-mono text-xs uppercase tracking-wide text-ink-400">
-                      {city.nameEn || city.en || city.province || '—'}
-                    </p>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* ---------- 订阅条 ---------- */}
-        <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6" aria-label="邮箱订阅">
-          <div className="glass reveal relative overflow-hidden rounded-3xl px-6 py-10 sm:px-10">
-            <div
-              className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-brand-500/20 blur-3xl animate-float-slow"
-              aria-hidden="true"
-            />
-            <div
-              className="pointer-events-none absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-cyan-400/10 blur-3xl"
-              aria-hidden="true"
-            />
-            <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-              <div>
-                <h2 className="font-display text-xl font-semibold text-ink-950">订阅城市上线通知</h2>
-                <p className="mt-1.5 text-sm text-ink-500">新城市开通、数据源扩充时第一时间收到邮件。</p>
+            <Link
+              to="/cities"
+              className="group inline-flex items-center gap-1 text-sm font-medium text-brand-300 transition hover:text-brand-700"
+            >
+              全部城市
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 transition group-hover:translate-x-0.5" aria-hidden="true">
+                <path
+                  fillRule="evenodd"
+                  d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </Link>
+          </div>
+          <div className="city-marquee mt-8">
+            {citiesStatus === 'loading' && (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {Array.from({ length: 8 }).map((_, index) => (
+                  <div key={index} className="glass h-[86px] animate-pulse rounded-2xl" />
+                ))}
               </div>
-              <form className="flex w-full max-w-md flex-col gap-2" onSubmit={handleSubscribe} noValidate>
-                <div className="flex gap-2">
-                  <label htmlFor="subscribe-email" className="sr-only">
-                    邮箱地址
-                  </label>
-                  <input
-                    id="subscribe-email"
-                    type="email"
-                    value={subscribeEmail}
-                    onChange={(event) => setSubscribeEmail(event.target.value)}
-                    placeholder="you@example.com"
-                    className="h-11 flex-1 rounded-full border-0 bg-black/30 px-4 font-mono text-sm text-ink-900 ring-1 ring-inset ring-white/10 transition placeholder:text-ink-300 focus:bg-black/45 focus:ring-2 focus:ring-brand-500/80"
-                  />
-                  <Button type="submit" loading={subscribeState.status === 'loading'} aria-label="订阅">
-                    订阅
-                  </Button>
-                </div>
-                {subscribeState.message && (
-                  <p
-                    className={[
-                      'text-xs',
-                      subscribeState.status === 'success' ? 'text-emerald-700' : 'text-rose-700',
-                    ].join(' ')}
-                    role="status"
+            )}
+            {citiesStatus === 'error' && (
+              <div className="glass rounded-2xl px-5 py-4 text-sm text-ink-600">
+                城市数据暂时加载失败，可以进入全部城市页继续查看。
+              </div>
+            )}
+            {citiesStatus === 'ready' && hotCities.length === 0 && (
+              <div className="glass rounded-2xl px-5 py-4 text-sm text-ink-600">
+                城市接口已返回，当前没有可展示城市。
+              </div>
+            )}
+            {scrollingCities.length > 0 && (
+              <div className="city-marquee-track">
+                {scrollingCities.map((group, groupIndex) => (
+                  <ul
+                    key={groupIndex}
+                    className="grid shrink-0 grid-flow-col grid-rows-2 gap-3 pr-3"
+                    aria-hidden={groupIndex === 1}
                   >
-                    {subscribeState.message}
-                  </p>
-                )}
-              </form>
-            </div>
+                    {group.map((city, index) => (
+                      <li key={`${groupIndex}-${cityKey(city, index)}`} className="w-[18rem] shrink-0">
+                        <Link
+                          to={`/city/${encodeURIComponent(city.name)}`}
+                          tabIndex={groupIndex === 1 ? -1 : 0}
+                          className="glass group block h-full rounded-2xl p-4 transition duration-300 hover:-translate-y-1 hover:shadow-glow hover:ring-brand-400/40"
+                          aria-label={`进入${city.name}工作台`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="truncate text-base font-semibold text-ink-900 transition group-hover:text-brand-300">
+                                {city.name}
+                              </p>
+                              <p className="mt-1 truncate font-mono text-xs uppercase tracking-wide text-ink-400">
+                                {city.nameEn || city.en || city.province || '—'}
+                              </p>
+                            </div>
+                            <span className="shrink-0 rounded-full bg-brand-500/10 px-2 py-1 text-[11px] font-medium text-brand-300 ring-1 ring-brand-400/20">
+                              {cityStatusLabel(city)}
+                            </span>
+                          </div>
+                          <div className="mt-4 flex items-center justify-between text-xs text-ink-400">
+                            <span>{city.province || city.adcode || '全国'}</span>
+                            <span className="inline-flex items-center gap-1 text-brand-300">
+                              进入
+                              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" aria-hidden="true">
+                                <path
+                                  fillRule="evenodd"
+                                  d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            </span>
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ))}
+              </div>
+            )}
           </div>
         </section>
       </div>

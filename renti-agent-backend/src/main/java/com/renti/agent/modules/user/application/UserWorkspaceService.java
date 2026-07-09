@@ -28,7 +28,11 @@ public class UserWorkspaceService {
 
     private static final Set<String> IMPORTED_SNAPSHOT_KEYS = Set.of(
             "id", "title", "price", "location", "match", "note", "tone",
-            "image", "images", "position", "detail");
+            "image", "images", "position", "detail",
+            // 表单导入的结构化字段：坐标用于地图工作台标点，其余用于卡片展示与排序
+            "longitude", "latitude", "rentPrice", "rent_price", "layout",
+            "areaSqm", "area_sqm", "rentType", "rent_type",
+            "district", "businessArea", "business_area", "community");
 
     private static final String DEFAULT_CITY = "上海";
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 
+import { useThemePreference } from '../../hooks/useTheme.js'
 import { useAuthStore } from '../../store/authStore.js'
 import Button from '../ui/Button.jsx'
 
@@ -41,6 +42,37 @@ const NAV_ITEMS = [
   { to: '/workspace', label: '我的工作台' },
 ]
 
+function ThemeToggleButton({ isDark, onToggle, className = '' }) {
+  const label = isDark ? '切换到亮色主题' : '切换到暗色主题'
+
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={label}
+      title={label}
+      className={[
+        'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
+        'text-ink-500 ring-1 ring-inset ring-white/10 transition',
+        'hover:bg-white/[0.06] hover:text-ink-900 focus-visible:outline focus-visible:outline-2',
+        'focus-visible:outline-offset-2 focus-visible:outline-brand-400',
+        className,
+      ].join(' ')}
+    >
+      {isDark ? (
+        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.5" />
+          <path d="M12 2.75v2M12 19.25v2M4.42 4.42l1.42 1.42M18.16 18.16l1.42 1.42M2.75 12h2M19.25 12h2M4.42 19.58l1.42-1.42M18.16 5.84l1.42-1.42" />
+        </svg>
+      ) : (
+        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M20.25 14.2A8.25 8.25 0 0 1 9.8 3.75 8.25 8.25 0 1 0 20.25 14.2Z" />
+        </svg>
+      )}
+    </button>
+  )
+}
+
 /**
  * 站点顶部导航：logo + 主导航 + 登录态区域。
  * 置顶透明，滚动后切换为玻璃拟态深色底。
@@ -48,6 +80,7 @@ const NAV_ITEMS = [
 function SiteHeader() {
   const navigate = useNavigate()
   const { status, user, fetchSession, logout } = useAuthStore()
+  const { isDark, toggleTheme } = useThemePreference()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef(null)
@@ -85,15 +118,17 @@ function SiteHeader() {
     <header
       className={[
         'sticky top-0 z-40 transition-all duration-300',
-        scrolled
+        scrolled && isDark
           ? 'border-b border-white/[0.06] bg-surface-deep/70 shadow-card backdrop-blur-xl'
-          : 'border-b border-transparent bg-transparent',
+          : scrolled
+            ? 'border-b border-ink-200 bg-surface/85 shadow-card backdrop-blur-xl'
+            : 'border-b border-transparent bg-transparent',
       ].join(' ')}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
         <Link to="/" className="group flex items-center gap-2.5" aria-label="Renti Agent 首页">
           <BrandMark />
-          <span className="font-display text-base font-semibold tracking-tight text-ink-900 transition group-hover:text-white">
+          <span className={['font-display text-base font-semibold tracking-tight text-ink-900 transition', isDark ? 'group-hover:text-white' : 'group-hover:text-brand-600'].join(' ')}>
             Renti Agent
           </span>
         </Link>
@@ -107,9 +142,13 @@ function SiteHeader() {
               className={({ isActive }) =>
                 [
                   'rounded-full px-4 py-2 text-sm font-medium transition-colors',
-                  isActive
+                  isActive && isDark
                     ? 'bg-white/[0.08] text-white ring-1 ring-inset ring-white/10'
-                    : 'text-ink-500 hover:bg-white/[0.05] hover:text-ink-900',
+                    : isActive
+                      ? 'bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-100'
+                      : isDark
+                        ? 'text-ink-500 hover:bg-white/[0.05] hover:text-ink-900'
+                        : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900',
                 ].join(' ')
               }
             >
@@ -119,6 +158,7 @@ function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <ThemeToggleButton isDark={isDark} onToggle={toggleTheme} />
           {status === 'authenticated' && user ? (
             <div className="relative" ref={menuRef}>
               <button
@@ -153,7 +193,10 @@ function SiteHeader() {
                   <Link
                     to="/workspace"
                     onClick={() => setMenuOpen(false)}
-                    className="block px-4 py-2 text-sm text-ink-700 transition hover:bg-white/[0.06] hover:text-white"
+                    className={[
+                      'block px-4 py-2 text-sm text-ink-700 transition',
+                      isDark ? 'hover:bg-white/[0.06] hover:text-white' : 'hover:bg-ink-100 hover:text-ink-900',
+                    ].join(' ')}
                   >
                     我的工作台
                   </Link>
@@ -193,9 +236,13 @@ function SiteHeader() {
             className={({ isActive }) =>
               [
                 'shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
-                isActive
+                isActive && isDark
                   ? 'bg-white/[0.08] text-white ring-1 ring-inset ring-white/10'
-                  : 'text-ink-500 hover:bg-white/[0.05] hover:text-ink-900',
+                  : isActive
+                    ? 'bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-100'
+                    : isDark
+                      ? 'text-ink-500 hover:bg-white/[0.05] hover:text-ink-900'
+                      : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900',
               ].join(' ')
             }
           >

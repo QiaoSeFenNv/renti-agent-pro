@@ -48,6 +48,8 @@ public class Neo4jHttpClient {
 
     /**
      * 执行 Cypher（调用方自行保证只读校验），返回行列表（字段名 → 值）。
+     * 代理线路 TLS 握手偶发被重置（Remote host terminated the handshake）：
+     * 走代理时失败重试一次，仍失败则直连兜底；HTTP 4xx/5xx 与查询错误不重试。
      *
      * @throws IllegalStateException 未配置或上游失败
      */
@@ -57,46 +59,64 @@ public class Neo4jHttpClient {
             throw new IllegalStateException("Neo4j URL 或 API key 未配置。");
         }
         var endpoint = queryApiUrl(effectiveBaseUrl(neo4j), neo4j.database());
-        try {
-            var payload = new LinkedHashMap<String, Object>();
-            payload.put("statement", statement);
-            payload.put("parameters", parameters == null ? Map.of() : parameters);
-            var body = objectMapper.writeValueAsString(payload);
-
-            var token = Base64.getEncoder().encodeToString(
-                    (neo4j.username() + ":" + neo4j.password()).getBytes(StandardCharsets.UTF_8));
-            var request = HttpRequest.newBuilder(URI.create(endpoint))
-                    .timeout(Duration.ofMillis((long) (neo4j.timeoutSeconds() * 1000)))
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Basic " + token)
-                    .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
-                    .build();
-
-            var response = httpClient(neo4j).send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() >= 400) {
-                var detail = response.body() == null ? "" : response.body();
-                throw new IllegalStateException("neo4j HTTP %d: %s".formatted(response.statusCode(),
-                        mask(detail.length() > 300 ? detail.substring(0, 300) : detail, neo4j.password())));
+        var proxyPlan = neo4j.proxyUrl().isBlank() ? new boolean[]{false, false} : new boolean[]{true, true, false};
+        Exception lastFailure = null;
+        for (int attempt = 0; attempt < proxyPlan.length; attempt++) {
+            try {
+                return executeOnce(neo4j, endpoint, statement, parameters, proxyPlan[attempt]);
+            } catch (IllegalStateException exception) {
+                throw exception;
+            } catch (Exception exception) {
+                lastFailure = exception;
+                if (attempt < proxyPlan.length - 1) {
+                    log.warn("Neo4j 请求失败（第 {} 次，via {}），自动重试：{}", attempt + 1,
+                            proxyPlan[attempt] ? "proxy" : "direct",
+                            mask(String.valueOf(exception.getMessage()), neo4j.password()));
+                }
             }
-            Map<String, Object> parsed = new LinkedHashMap<>();
-            if (response.body() != null && !response.body().isBlank()) {
-                parsed = objectMapper.readValue(response.body(), objectMapper.getTypeFactory()
-                        .constructMapType(LinkedHashMap.class, String.class, Object.class));
-            }
-            failOnErrors(parsed);
-            return rowsFromResponse(parsed);
-        } catch (IllegalStateException exception) {
-            throw exception;
-        } catch (Exception exception) {
-            throw new IllegalStateException(mask(String.valueOf(exception.getMessage()), neo4j.password()), exception);
         }
+        throw new IllegalStateException(
+                mask(String.valueOf(lastFailure == null ? "unknown" : lastFailure.getMessage()), neo4j.password()),
+                lastFailure);
     }
 
-    private HttpClient httpClient(IntegrationSettingsService.Neo4jSettings neo4j) throws Exception {
+    private List<Map<String, Object>> executeOnce(IntegrationSettingsService.Neo4jSettings neo4j, String endpoint,
+                                                  String statement, Map<String, Object> parameters,
+                                                  boolean viaProxy) throws Exception {
+        var payload = new LinkedHashMap<String, Object>();
+        payload.put("statement", statement);
+        payload.put("parameters", parameters == null ? Map.of() : parameters);
+        var body = objectMapper.writeValueAsString(payload);
+
+        var token = Base64.getEncoder().encodeToString(
+                (neo4j.username() + ":" + neo4j.password()).getBytes(StandardCharsets.UTF_8));
+        var request = HttpRequest.newBuilder(URI.create(endpoint))
+                .timeout(Duration.ofMillis((long) (neo4j.timeoutSeconds() * 1000)))
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .header("Authorization", "Basic " + token)
+                .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
+                .build();
+
+        var response = httpClient(neo4j, viaProxy).send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() >= 400) {
+            var detail = response.body() == null ? "" : response.body();
+            throw new IllegalStateException("neo4j HTTP %d: %s".formatted(response.statusCode(),
+                    mask(detail.length() > 300 ? detail.substring(0, 300) : detail, neo4j.password())));
+        }
+        Map<String, Object> parsed = new LinkedHashMap<>();
+        if (response.body() != null && !response.body().isBlank()) {
+            parsed = objectMapper.readValue(response.body(), objectMapper.getTypeFactory()
+                    .constructMapType(LinkedHashMap.class, String.class, Object.class));
+        }
+        failOnErrors(parsed);
+        return rowsFromResponse(parsed);
+    }
+
+    private HttpClient httpClient(IntegrationSettingsService.Neo4jSettings neo4j, boolean viaProxy) throws Exception {
         var builder = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofMillis((long) (neo4j.timeoutSeconds() * 1000)));
-        if (!neo4j.proxyUrl().isBlank()) {
+        if (viaProxy && !neo4j.proxyUrl().isBlank()) {
             var proxy = URI.create(neo4j.proxyUrl().strip());
             int port = proxy.getPort() > 0 ? proxy.getPort() : 80;
             builder.proxy(ProxySelector.of(new InetSocketAddress(proxy.getHost(), port)));

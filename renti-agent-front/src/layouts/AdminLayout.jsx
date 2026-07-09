@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
+import { useThemePreference } from '../hooks/useTheme.js'
 import { useAdminAuthStore } from '../store/adminAuthStore.js'
 
 function NavIcon({ d }) {
@@ -149,8 +150,10 @@ function AdminLayout() {
   const location = useLocation()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const { isDark, toggleTheme } = useThemePreference()
 
   const pageTitle = TITLES[location.pathname] ?? '控制台总览'
+  const themeLabel = isDark ? '切换到亮色主题' : '切换到暗色主题'
 
   useEffect(() => {
     setDrawerOpen(false)
@@ -174,8 +177,13 @@ function AdminLayout() {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col lg:pl-60">
-        {/* 顶部面包屑条 */}
-        <header className="sticky top-0 z-20 flex h-12 items-center justify-between gap-3 border-b border-white/[0.06] bg-surface-deep/70 px-4 backdrop-blur-xl sm:px-6">
+        {/* 顶部面包屑条：暗色下融入深底，亮色下用暖白玻璃避免生硬灰带 */}
+        <header
+          className={[
+            'sticky top-0 z-20 flex h-12 items-center justify-between gap-3 border-b px-4 backdrop-blur-xl sm:px-6',
+            isDark ? 'border-white/[0.06] bg-surface-deep/70' : 'border-ink-900/[0.08] bg-white/75 shadow-[0_1px_12px_rgb(15_23_42/0.04)]',
+          ].join(' ')}
+        >
           <div className="flex items-center gap-2 text-sm">
             <button
               type="button"
@@ -191,17 +199,48 @@ function AdminLayout() {
             <span className="hidden text-ink-300 sm:inline">/</span>
             <span className="font-medium text-ink-900">{pageTitle}</span>
           </div>
-          <button
-            type="button"
-            onClick={() => setRefreshKey((key) => key + 1)}
-            aria-label="刷新当前页数据"
-            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs text-ink-500 ring-1 ring-inset ring-white/10 transition hover:bg-white/[0.06] hover:text-white"
-          >
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M4 4v6h6M20 20v-6h-6M20 9a8 8 0 00-14.5-3M4 15a8 8 0 0014.5 3" />
-            </svg>
-            刷新
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={themeLabel}
+              title={themeLabel}
+              className={[
+                'inline-flex h-8 w-8 items-center justify-center rounded-full text-ink-500 ring-1 ring-inset transition',
+                'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400',
+                isDark
+                  ? 'ring-white/10 hover:bg-white/[0.06] hover:text-white'
+                  : 'ring-ink-900/10 hover:bg-ink-900/[0.05] hover:text-ink-900',
+              ].join(' ')}
+            >
+              {isDark ? (
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="4.5" />
+                  <path d="M12 2.75v2M12 19.25v2M4.42 4.42l1.42 1.42M18.16 18.16l1.42 1.42M2.75 12h2M19.25 12h2M4.42 19.58l1.42-1.42M18.16 5.84l1.42-1.42" />
+                </svg>
+              ) : (
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M20.25 14.2A8.25 8.25 0 0 1 9.8 3.75 8.25 8.25 0 1 0 20.25 14.2Z" />
+                </svg>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setRefreshKey((key) => key + 1)}
+              aria-label="刷新当前页数据"
+              className={[
+                'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs text-ink-500 ring-1 ring-inset transition',
+                isDark
+                  ? 'ring-white/10 hover:bg-white/[0.06] hover:text-white'
+                  : 'ring-ink-900/10 hover:bg-ink-900/[0.05] hover:text-ink-900',
+              ].join(' ')}
+            >
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M4 4v6h6M20 20v-6h-6M20 9a8 8 0 00-14.5-3M4 15a8 8 0 0014.5 3" />
+              </svg>
+              刷新
+            </button>
+          </div>
         </header>
 
         {/* key 变化触发子页面整体重挂载，实现「刷新」 */}

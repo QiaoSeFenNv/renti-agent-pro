@@ -61,7 +61,7 @@ function SearchPanel({
           </Button>
           <Button
             size="sm"
-            className="flex-1"
+            className="flex-1 !bg-[linear-gradient(135deg,#1678c2_0%,#0f9aa8_100%)] hover:!brightness-105"
             loading={loading && engine === 'agent'}
             disabled={loading}
             onClick={onAgentSearch}

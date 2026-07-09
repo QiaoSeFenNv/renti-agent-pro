@@ -13,7 +13,7 @@ spring:
       connection-timeout: 5000
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -45,7 +45,7 @@ renti:
     base-url: ${AGENT_SERVICE_URL:http://127.0.0.1:8001}
     timeout-seconds: 120
   amap:
-    web-service-key: ${AMAP_WEB_SERVICE_KEY:}
+    web-service-key: ${AMAP_WEB_SERVICE_KEY:69eb0aba98f26bf8d055ebcc45bf54de}
     base-url: https://restapi.amap.com
   deepseek:
     api-key: ${DEEPSEEK_API_KEY:}

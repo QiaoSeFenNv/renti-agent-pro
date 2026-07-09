@@ -77,6 +77,11 @@ public class AdminIngestionController {
         return crawlerScheduleService.runPlugin(pluginId, payload);
     }
 
+    @PostMapping("/crawler-plugins/{pluginId}/stop")
+    public Map<String, Object> stopPlugin(@PathVariable String pluginId) {
+        return crawlerScheduleService.stopPlugin(pluginId);
+    }
+
     @GetMapping("/crawler-schedules")
     public Map<String, Object> schedules() {
         return crawlerScheduleService.schedulesPayload();

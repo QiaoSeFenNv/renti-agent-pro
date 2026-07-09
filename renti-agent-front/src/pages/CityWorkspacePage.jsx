@@ -73,17 +73,18 @@ function CityWorkspacePage() {
   const [settingsLoaded, setSettingsLoaded] = useState(false)
   const [queryText, setQueryText] = useState(() => searchParams.get('q') || '')
   const [search, setSearch] = useState({ status: 'idle', error: '', result: null, engine: 'intent' })
-  const [radius, setRadius] = useState(1000)
+  const [radius, setRadius] = useState(null)
   const [sort, setSort] = useState('score_desc')
   const [page, setPage] = useState(1)
   const [selectedId, setSelectedId] = useState('')
   const [markerScope, setMarkerScope] = useState('page')
-  const [panelOpen, setPanelOpen] = useState(true)
+  const [panelOpen, setPanelOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [favoriteIds, setFavoriteIds] = useState(() => new Set())
   const [actionError, setActionError] = useState('')
   const [imported, setImported] = useState({ status: 'idle', error: '', items: [] })
   const [resolvingPoint, setResolvingPoint] = useState(false)
+  const [manualTarget, setManualTarget] = useState(null)
 
   const seqRef = useRef(0)
   const markersRef = useRef([])
@@ -122,8 +123,6 @@ function CityWorkspacePage() {
         if (disposed) return
         const value = data?.settings || data || {}
         setSettings(value)
-        const savedRadius = toNumber(readField(value, 'defaultRadiusMeters', 'radiusMeters', 'default_radius_meters'))
-        if (Number.isFinite(savedRadius) && savedRadius > 0) setRadius(savedRadius)
         const savedSort = readField(value, 'defaultSort', 'default_sort')
         if (savedSort === 'price_asc' || savedSort === 'score_desc') setSort(savedSort)
       })
@@ -160,10 +159,14 @@ function CityWorkspacePage() {
   /* ---------------- 搜索链路 ---------------- */
 
   const runSearch = useCallback(
-    async ({ engine = 'intent', queryText: qArg, source = 'text', center = null, label = '', radiusMeters } = {}) => {
+    async (params = {}) => {
+      const { engine = 'intent', queryText: qArg, source = 'text', center = null, label = '' } = params
       const current = stateRef.current
-      const q = qArg !== undefined ? qArg : current.queryText.trim()
-      const effectiveRadius = radiusMeters ?? current.radius
+      const q = String(qArg !== undefined ? qArg : current.queryText || '').trim()
+      const searchText = q || `${current.city}整租`
+      const hasRadiusOverride = Object.prototype.hasOwnProperty.call(params, 'radiusMeters')
+      const effectiveRadius = hasRadiusOverride ? params.radiusMeters : current.radius
+      const numericRadius = toNumber(effectiveRadius)
       const seq = ++seqRef.current
 
       setSearch({ status: 'loading', error: '', result: null, engine })
@@ -173,19 +176,25 @@ function CityWorkspacePage() {
       infoWindowRef.current?.close?.()
 
       const payload = {
-        queryText: q,
+        queryText: searchText,
         city: current.city,
         source,
-        radiusMeters: effectiveRadius,
         sort: current.sort,
       }
+      // radiusMeters = 0 表示“全城”；未选择时不传，由后端按默认/用户设置取值
+      const isCityWide = numericRadius === 0
+      if (Number.isFinite(numericRadius) && numericRadius >= 0) payload.radiusMeters = numericRadius
       const modelProfile = readField(current.settings || {}, 'modelProfile', 'model_profile')
       if (modelProfile) payload.modelProfile = modelProfile
-      if (center) {
+      // 全城查询不携带选点中心，直接检索全城数据；选点保留在 lastSearchRef，切回具体半径时继续生效
+      if (center && !isCityWide) {
+        setManualTarget({ lng: center[0], lat: center[1], label: label || '地图选点' })
         payload.center = { longitude: center[0], latitude: center[1], label: label || '地图选点' }
         payload.longitude = center[0]
         payload.latitude = center[1]
         payload.label = label || '地图选点'
+      } else {
+        setManualTarget(null)
       }
 
       try {
@@ -245,6 +254,17 @@ function CityWorkspacePage() {
     return rows.map(normalizeRecommendation)
   }, [result])
 
+  const resultCenter = useMemo(() => {
+    const center = result?.center
+    const lng = toNumber(readField(center || {}, 'longitude', 'lng'))
+    const lat = toNumber(readField(center || {}, 'latitude', 'lat'))
+    if (!Number.isFinite(lng) || !Number.isFinite(lat)) return null
+    return { lng, lat, label: center?.label || '目标位置' }
+  }, [result])
+
+  const targetCenter = resultCenter || manualTarget
+  const selectedRadius = toNumber(radius)
+
   const listings = useMemo(() => {
     if (isImportMode) {
       const keyword = queryText.trim().toLowerCase()
@@ -282,18 +302,11 @@ function CityWorkspacePage() {
     return markers.filter((item) => ids.has(item.id))
   }, [markers, markerScope, pagedListings])
 
-  const resultCenter = useMemo(() => {
-    const center = result?.center
-    const lng = toNumber(readField(center || {}, 'longitude', 'lng'))
-    const lat = toNumber(readField(center || {}, 'latitude', 'lat'))
-    if (!Number.isFinite(lng) || !Number.isFinite(lat)) return null
-    return { lng, lat, label: center?.label || '目标位置' }
-  }, [result])
-
   const resultRadius = useMemo(() => {
     const value = toNumber(readField(result || {}, 'radiusMeters', 'radius_meters'))
-    return Number.isFinite(value) && value > 0 ? value : radius
-  }, [result, radius])
+    if (Number.isFinite(value) && value > 0) return value
+    return Number.isFinite(selectedRadius) && selectedRadius > 0 ? selectedRadius : null
+  }, [result, selectedRadius])
 
   const agentIntent = result?.agent?.intent || null
   const warnings = Array.isArray(result?.warnings) ? result.warnings.filter(Boolean) : []
@@ -350,12 +363,12 @@ function CityWorkspacePage() {
       const element = document.createElement('button')
       element.type = 'button'
       element.className = [
-        'whitespace-nowrap rounded-full px-2.5 py-1 font-mono text-xs font-semibold backdrop-blur transition ring-1',
+        'map-listing-marker whitespace-nowrap rounded-full px-3 py-1.5 font-mono text-xs font-bold transition ring-1',
         selected
-          ? 'bg-brand-gradient text-white ring-white/25 shadow-glow'
+          ? 'map-listing-marker--selected'
           : marker.withinRadius === false
-            ? 'bg-surface-deep/70 text-ink-400 ring-white/10'
-            : 'bg-surface-deep/85 text-ink-800 ring-white/15 shadow-card hover:text-white hover:ring-brand-400/60',
+            ? 'map-listing-marker--muted'
+            : 'map-listing-marker--default',
       ].join(' ')
       element.textContent = marker.priceLabel || marker.title || '房源'
       element.setAttribute('aria-label', `${marker.title || '房源'} ${marker.priceLabel || ''}`)
@@ -388,42 +401,51 @@ function CityWorkspacePage() {
     targetMarkerRef.current = null
     circleRef.current?.setMap(null)
     circleRef.current = null
-    if (!resultCenter) return
+    if (!targetCenter) return
 
+    // 目标点始终用固定小尺寸的纹波标记：尺寸创建后不再变化，
+    // AMap 按初始尺寸计算的 center 锚点偏移保持正确；半径范围只由 amap.Circle 表达。
     const element = document.createElement('div')
-    element.className = 'flex flex-col items-center'
+    element.className = 'map-target-ripple map-target-ripple--point'
+    element.setAttribute('aria-label', targetCenter.label)
     element.innerHTML = `
-      <span class="whitespace-nowrap rounded-full bg-surface-deep/90 px-2.5 py-1 text-xs font-medium text-white ring-1 ring-cyan-400/40 shadow-glow backdrop-blur">${escapeHtml(resultCenter.label)}</span>
-      <span class="relative mt-1.5 flex h-3.5 w-3.5">
-        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-60"></span>
-        <span class="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-surface-deep bg-cyan-300"></span>
-      </span>`
+      <span class="map-target-ripple__wave map-target-ripple__wave--one"></span>
+      <span class="map-target-ripple__wave map-target-ripple__wave--two"></span>
+      <span class="map-target-ripple__wave map-target-ripple__wave--three"></span>
+      <span class="map-target-ripple__final-ring"></span>
+      <span class="map-target-ripple__core"></span>`
     targetMarkerRef.current = new amap.Marker({
-      position: [resultCenter.lng, resultCenter.lat],
+      position: [targetCenter.lng, targetCenter.lat],
       content: element,
-      anchor: 'bottom-center',
+      anchor: 'center',
       zIndex: 150,
       map,
     })
-    circleRef.current = new amap.Circle({
-      center: [resultCenter.lng, resultCenter.lat],
-      radius: resultRadius,
-      strokeColor: '#477bff',
-      strokeOpacity: 0.55,
-      strokeWeight: 1.4,
-      fillColor: '#477bff',
-      fillOpacity: 0.07,
-      bubble: true,
-    })
-    map.add(circleRef.current)
-    map.setZoomAndCenter(radiusToZoom(resultRadius), [resultCenter.lng, resultCenter.lat])
-  }, [mapReady, amap, mapRef, resultCenter, resultRadius])
+
+    if (Number.isFinite(resultRadius) && resultRadius > 0) {
+      circleRef.current = new amap.Circle({
+        center: [targetCenter.lng, targetCenter.lat],
+        radius: resultRadius,
+        strokeColor: '#1678c2',
+        strokeOpacity: 0.52,
+        strokeWeight: 1.4,
+        fillColor: '#2bb7c8',
+        fillOpacity: 0.08,
+        bubble: true,
+      })
+      map.add(circleRef.current)
+      map.setZoomAndCenter(radiusToZoom(resultRadius), [targetCenter.lng, targetCenter.lat])
+    } else {
+      map.setZoomAndCenter(11, [targetCenter.lng, targetCenter.lat])
+    }
+  }, [mapReady, amap, mapRef, targetCenter, resultRadius])
 
   /** 地图点击 → resolvePlace → 以选点为中心搜索 */
   const handleMapClickRef = useRef(null)
   handleMapClickRef.current = async (lng, lat) => {
     const current = stateRef.current
     if (current.mode === 'user_import') return
+    setPanelOpen(true)
     setResolvingPoint(true)
     let center = [lng, lat]
     let label = '地图选点'
@@ -731,49 +753,57 @@ function CityWorkspacePage() {
       </div>
 
       {/* ---------- 左侧悬浮工作面板 ---------- */}
-      <div className="pointer-events-none absolute bottom-4 left-3 top-[4.25rem] z-20 flex w-[calc(100%-1.5rem)] max-w-[400px] flex-col gap-3 sm:left-4 sm:top-[4.75rem]">
-        {/* 搜索命令条 */}
-        <div className="pointer-events-auto glass-strong rounded-2xl p-3.5 shadow-float">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-ink-500">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-cyan-300 animate-pulse-glow" aria-hidden="true" />
-              {isImportMode ? '筛选导入房源' : '自然语言找房'}
-            </h2>
-            <button
-              type="button"
-              onClick={() => setPanelOpen((open) => !open)}
-              aria-label={panelOpen ? '收起结果面板' : '展开结果面板'}
-              aria-expanded={panelOpen}
-              className="rounded-full p-1.5 text-ink-400 transition hover:bg-white/[0.08] hover:text-white"
-            >
-              <svg
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                className={['h-4 w-4 transition-transform duration-300', panelOpen ? '' : 'rotate-180'].join(' ')}
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M14.77 12.78a.75.75 0 0 1-1.06 0L10 9.06l-3.72 3.72a.75.75 0 1 1-1.06-1.06l4.25-4.25a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06Z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
-          </div>
-          <SearchPanel
-            value={queryText}
-            onChange={setQueryText}
-            onSearch={() => runSearch({ engine: 'intent' })}
-            onAgentSearch={() => runSearch({ engine: 'agent' })}
-            loading={searchLoading}
-            engine={search.engine}
-            isImportMode={isImportMode}
-            city={city}
-          />
-        </div>
-
-        {/* 结果面板 */}
+      <div
+        className={[
+          'pointer-events-none absolute bottom-4 top-[4.25rem] z-20 flex flex-col gap-3 sm:top-[4.75rem]',
+          panelOpen
+            ? 'left-3 w-[calc(100%-1.5rem)] max-w-[400px] sm:left-4'
+            : 'left-0 w-12 items-start justify-center',
+        ].join(' ')}
+      >
         {panelOpen ? (
+          <>
+            {/* 搜索命令条 */}
+            <div className="pointer-events-auto glass-strong rounded-2xl p-3.5 shadow-float">
+              <div className="mb-2 flex items-center justify-between">
+                <h2 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-ink-500">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-cyan-300 animate-pulse-glow" aria-hidden="true" />
+                  {isImportMode ? '筛选导入房源' : '自然语言找房'}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setPanelOpen(false)}
+                  aria-label="收起查询面板"
+                  aria-expanded={panelOpen}
+                  className="rounded-full p-1.5 text-ink-400 transition hover:bg-white/[0.08] hover:text-white"
+                >
+                  <svg
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className="h-4 w-4 transition-transform duration-300"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M12.78 14.78a.75.75 0 0 1-1.06 0l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 1 1 1.06 1.06L9.06 10l3.72 3.72a.75.75 0 0 1 0 1.06Z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <SearchPanel
+                value={queryText}
+                onChange={setQueryText}
+                onSearch={() => runSearch({ engine: 'intent' })}
+                onAgentSearch={() => runSearch({ engine: 'agent' })}
+                loading={searchLoading}
+                engine={search.engine}
+                isImportMode={isImportMode}
+                city={city}
+              />
+            </div>
+
+            {/* 结果面板 */}
           <div className="pointer-events-auto glass-strong flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl shadow-float">
             <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 scrollbar-thin">
               {isImportMode && (
@@ -788,7 +818,7 @@ function CityWorkspacePage() {
 
               {/* 摘要 / agent 意图 / 警告 / 步骤条（仅平台模式且有结果时） */}
               {!isImportMode && search.status === 'ready' && result?.summary && !needsClarification && (
-                <p className="rounded-xl bg-brand-500/10 px-3 py-2.5 text-xs leading-5 text-ink-800 ring-1 ring-brand-400/20">
+                <p className="rounded-xl bg-sky-700/10 px-3 py-2.5 text-xs leading-5 text-ink-800 ring-1 ring-sky-700/20">
                   {result.summary}
                 </p>
               )}
@@ -912,19 +942,31 @@ function CityWorkspacePage() {
               )}
             </div>
           </div>
+          </>
         ) : (
-          listings.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setPanelOpen(true)}
-              className="pointer-events-auto glass-strong flex items-center gap-2 self-start rounded-full px-3.5 py-2 text-xs font-medium text-ink-700 shadow-float transition hover:text-white hover:ring-white/25"
-            >
-              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-gradient px-1.5 font-mono text-[10px] font-semibold text-white">
+          <button
+            type="button"
+            onClick={() => setPanelOpen(true)}
+            aria-label="展开查询面板"
+            aria-expanded={panelOpen}
+            className="pointer-events-auto glass-strong flex min-h-48 w-16 flex-col items-center justify-center gap-3 rounded-r-2xl border-l-0 px-3 py-5 text-sm font-bold text-ink-900 shadow-float ring-1 ring-sky-700/25 transition hover:w-[4.5rem] hover:text-sky-800 hover:ring-sky-700/45"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-gradient text-white shadow-glow" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
+                <path
+                  fillRule="evenodd"
+                  d="M7.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 1 1-1.06-1.06L10.94 10 7.22 6.28a.75.75 0 0 1 0-1.06Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </span>
+            <span className="[writing-mode:vertical-rl]">展开找房</span>
+            {listings.length > 0 && (
+              <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-brand-gradient px-1.5 font-mono text-[11px] font-semibold text-white shadow-sm">
                 {listings.length}
               </span>
-              查看结果列表
-            </button>
-          )
+            )}
+          </button>
         )}
       </div>
 

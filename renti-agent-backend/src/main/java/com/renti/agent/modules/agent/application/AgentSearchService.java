@@ -62,7 +62,8 @@ public class AgentSearchService {
         var settings = userSettingsService.getSettings(userId);
         Map<String, Object> request = new LinkedHashMap<>();
         request.put("userId", userId);
-        request.put("query", AgentPayloads.text(payload.get("query"), AgentPayloads.text(payload.get("text"))));
+        request.put("query", AgentPayloads.text(payload.get("query"),
+                AgentPayloads.text(payload.get("queryText"), AgentPayloads.text(payload.get("text")))));
         request.put("city", AgentPayloads.text(payload.get("city"), "上海"));
         request.put("source", AgentPayloads.text(payload.get("source"), "text"));
         var center = AgentPayloads.mapValue(payload.get("center"));
@@ -76,7 +77,8 @@ public class AgentSearchService {
         request.put("radiusMeters", radius == null ? 2000 : radius);
         request.put("settings", Map.of(
                 "modelProfile", AgentPayloads.text(settings.get("modelProfile"), "balanced"),
-                "defaultSort", AgentPayloads.text(settings.get("defaultSort"), "score_desc"),
+                "defaultSort", AgentPayloads.text(payload.get("sort"),
+                        AgentPayloads.text(settings.get("defaultSort"), "score_desc")),
                 "listingPageSize", settings.get("listingPageSize") == null ? 10 : settings.get("listingPageSize")));
         return request;
     }

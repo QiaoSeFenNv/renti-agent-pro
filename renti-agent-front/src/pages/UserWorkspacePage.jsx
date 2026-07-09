@@ -8,7 +8,7 @@ import { EmptyState, LoadingBlock } from '../components/ui/Feedback.jsx'
 import TextField, { SelectField } from '../components/ui/Input.jsx'
 import Modal from '../components/ui/Modal.jsx'
 import SiteLayout from '../layouts/SiteLayout.jsx'
-import { listingService } from '../services/searchService.js'
+import { listingService, searchService } from '../services/searchService.js'
 import { userService } from '../services/userService.js'
 
 const TABS = [
@@ -302,11 +302,32 @@ function ImportsTab() {
   const [error, setError] = useState('')
   const [listings, setListings] = useState([])
 
+  const [importMode, setImportMode] = useState('form')
   const [jsonText, setJsonText] = useState('')
   const [importState, setImportState] = useState({ status: 'idle', message: '' })
+  const emptyForm = {
+    title: '',
+    rentPrice: '',
+    layout: '',
+    rentType: '整租',
+    areaSqm: '',
+    district: '',
+    community: '',
+    image: '',
+    longitude: '',
+    latitude: '',
+  }
+  const [form, setForm] = useState(emptyForm)
+  const [geo, setGeo] = useState({ status: 'idle', message: '' })
   const [clearOpen, setClearOpen] = useState(false)
   const [clearing, setClearing] = useState(false)
   const [clearError, setClearError] = useState('')
+
+  const setField = (key, value) => {
+    setForm((prev) => ({ ...prev, [key]: value }))
+    // 地址相关字段变化后，旧的定位结果不再可信
+    if (key === 'community' || key === 'district') setGeo({ status: 'idle', message: '' })
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -343,6 +364,102 @@ function ImportsTab() {
       }
       setImportState({ status: 'success', message: `成功导入 ${items.length} 条房源。` })
       setJsonText('')
+      load()
+    } catch (err) {
+      setImportState({ status: 'error', message: err.message || '导入失败，请稍后重试。' })
+    }
+  }
+
+  /** 高德地理编码：行政区 + 小区/地址 → 经纬度 */
+  const resolveCoordinates = async () => {
+    const community = form.community.trim()
+    if (!community) {
+      setGeo({ status: 'error', message: '请先填写小区 / 地址，再查询坐标。' })
+      return null
+    }
+    setGeo({ status: 'loading', message: '' })
+    try {
+      const data = await searchService.geocode({
+        city,
+        address: [form.district.trim(), community].filter(Boolean).join(''),
+        community,
+      })
+      const location = data?.location || {}
+      const lng = Number(location.longitude)
+      const lat = Number(location.latitude)
+      if (data?.ok && Number.isFinite(lng) && Number.isFinite(lat)) {
+        setForm((prev) => ({
+          ...prev,
+          longitude: String(lng),
+          latitude: String(lat),
+          district: prev.district || location.district || '',
+        }))
+        setGeo({ status: 'success', message: `已定位：${location.label || community}（${lng.toFixed(6)}, ${lat.toFixed(6)}）` })
+        return { longitude: lng, latitude: lat }
+      }
+      setGeo({ status: 'error', message: data?.summary || '未能定位该地址，可手动填写经纬度。' })
+      return null
+    } catch (err) {
+      setGeo({ status: 'error', message: err.message || '坐标查询失败，可手动填写经纬度。' })
+      return null
+    }
+  }
+
+  const handleFormImport = async (event) => {
+    event.preventDefault()
+    const title = form.title.trim()
+    const community = form.community.trim()
+    if (!title || !community) {
+      setImportState({ status: 'error', message: '请至少填写「标题」和「小区 / 地址」。' })
+      return
+    }
+    setImportState({ status: 'loading', message: '' })
+
+    // 未填坐标时自动调用高德定位一次；失败也允许导入，只是地图上无法标点
+    let longitude = Number(form.longitude)
+    let latitude = Number(form.latitude)
+    if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) {
+      const resolved = await resolveCoordinates()
+      if (resolved) {
+        longitude = resolved.longitude
+        latitude = resolved.latitude
+      }
+    }
+    const hasCoords = Number.isFinite(longitude) && Number.isFinite(latitude)
+
+    const rentPrice = Number(form.rentPrice)
+    const areaSqm = Number(form.areaSqm)
+    const listing = {
+      id: `my-${Date.now().toString(36)}`,
+      title,
+      community,
+      district: form.district.trim(),
+      location: [form.district.trim(), community].filter(Boolean).join(' · '),
+      rentType: form.rentType,
+    }
+    if (Number.isFinite(rentPrice) && rentPrice > 0) {
+      listing.rentPrice = rentPrice
+      listing.price = `${rentPrice} 元/月`
+    }
+    if (form.layout.trim()) listing.layout = form.layout.trim()
+    if (Number.isFinite(areaSqm) && areaSqm > 0) listing.areaSqm = areaSqm
+    if (form.image.trim()) listing.image = form.image.trim()
+    if (hasCoords) {
+      listing.longitude = longitude
+      listing.latitude = latitude
+      listing.position = [longitude, latitude]
+    }
+
+    try {
+      await userService.saveImportedListing({ city, listing })
+      setImportState({
+        status: 'success',
+        message: hasCoords
+          ? '导入成功，已带坐标，可在地图工作台的「自有房源」模式查看。'
+          : '导入成功，但未获取到坐标——该房源暂时无法在地图上标点，可补填经纬度后重新导入。',
+      })
+      setForm((prev) => ({ ...emptyForm, district: prev.district, rentType: prev.rentType }))
+      setGeo({ status: 'idle', message: '' })
       load()
     } catch (err) {
       setImportState({ status: 'error', message: err.message || '导入失败，请稍后重试。' })
@@ -389,39 +506,183 @@ function ImportsTab() {
       {/* 导入表单 */}
       <Card>
         <CardHeader
-          title="粘贴 JSON 导入"
-          description="支持单个对象或数组，字段建议包含 id / title / price / location / image。"
+          title="导入自有房源"
+          description={
+            importMode === 'form'
+              ? '逐项填写房源信息，自动调用高德地图解析经纬度；导入后可在地图工作台「自有房源」模式标点分析。'
+              : '支持单个对象或数组，字段建议包含 id / title / price / location / longitude / latitude / image。'
+          }
+          actions={
+            <div
+              className="inline-flex shrink-0 rounded-full bg-black/30 p-0.5 ring-1 ring-inset ring-white/[0.06]"
+              role="group"
+              aria-label="导入方式"
+            >
+              {[
+                { value: 'form', label: '表单录入' },
+                { value: 'json', label: 'JSON 导入' },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    setImportMode(option.value)
+                    setImportState({ status: 'idle', message: '' })
+                  }}
+                  aria-pressed={importMode === option.value}
+                  className={[
+                    'rounded-full px-3 py-1 text-xs font-medium transition',
+                    importMode === option.value
+                      ? 'bg-white/[0.12] text-white shadow-sm'
+                      : 'text-ink-500 hover:text-ink-800',
+                  ].join(' ')}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          }
         />
         <CardBody>
-          <form onSubmit={handleImport} className="space-y-3">
-            <label htmlFor="import-json" className="sr-only">
-              房源 JSON
-            </label>
-            <textarea
-              id="import-json"
-              value={jsonText}
-              onChange={(event) => setJsonText(event.target.value)}
-              rows={6}
-              placeholder='{"id": "demo-1", "title": "两室一厅", "price": "6500 元/月", "location": "徐汇区"}'
-              className="w-full rounded-xl border-0 bg-black/30 px-3.5 py-3 font-mono text-xs text-ink-900 ring-1 ring-inset ring-white/10 transition placeholder:text-ink-300 focus:bg-black/45 focus:ring-2 focus:ring-brand-500/80"
-            />
-            {importState.message && (
-              <p
-                className={[
-                  'text-sm',
-                  importState.status === 'success' ? 'text-emerald-600' : 'text-rose-600',
-                ].join(' ')}
-                role="status"
-              >
-                {importState.message}
-              </p>
-            )}
-            <div className="flex justify-end">
-              <Button type="submit" loading={importState.status === 'loading'} disabled={!jsonText.trim()}>
-                导入房源
-              </Button>
-            </div>
-          </form>
+          {importMode === 'form' ? (
+            <form onSubmit={handleFormImport} className="space-y-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <TextField
+                  label="标题 *"
+                  value={form.title}
+                  onChange={(e) => setField('title', e.target.value)}
+                  placeholder="如：新华路两室一厅 近地铁"
+                />
+                <TextField
+                  label="租金（元/月）"
+                  type="number"
+                  min="0"
+                  value={form.rentPrice}
+                  onChange={(e) => setField('rentPrice', e.target.value)}
+                  placeholder="6500"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <TextField
+                  label="户型"
+                  value={form.layout}
+                  onChange={(e) => setField('layout', e.target.value)}
+                  placeholder="2室1厅"
+                />
+                <SelectField label="出租方式" value={form.rentType} onChange={(e) => setField('rentType', e.target.value)}>
+                  <option value="整租">整租</option>
+                  <option value="合租">合租</option>
+                </SelectField>
+                <TextField
+                  label="面积（㎡）"
+                  type="number"
+                  min="0"
+                  value={form.areaSqm}
+                  onChange={(e) => setField('areaSqm', e.target.value)}
+                  placeholder="58"
+                />
+                <TextField
+                  label="行政区"
+                  value={form.district}
+                  onChange={(e) => setField('district', e.target.value)}
+                  placeholder="徐汇"
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+                <TextField
+                  label="小区 / 地址 *"
+                  value={form.community}
+                  onChange={(e) => setField('community', e.target.value)}
+                  placeholder="如：新华壹村 或 新华路 200 弄"
+                  hint="用于高德地图定位，越具体定位越准"
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="sm:mt-8"
+                  loading={geo.status === 'loading'}
+                  onClick={resolveCoordinates}
+                >
+                  查询坐标
+                </Button>
+              </div>
+              {geo.message && (
+                <p
+                  className={['text-xs', geo.status === 'success' ? 'text-emerald-600' : 'text-amber-600'].join(' ')}
+                  role="status"
+                >
+                  {geo.message}
+                </p>
+              )}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <TextField
+                  label="经度"
+                  value={form.longitude}
+                  onChange={(e) => setField('longitude', e.target.value)}
+                  placeholder="121.4737"
+                />
+                <TextField
+                  label="纬度"
+                  value={form.latitude}
+                  onChange={(e) => setField('latitude', e.target.value)}
+                  placeholder="31.2304"
+                />
+                <TextField
+                  label="图片 URL（可选）"
+                  value={form.image}
+                  onChange={(e) => setField('image', e.target.value)}
+                  className="col-span-2 sm:col-span-1"
+                  placeholder="https://…"
+                />
+              </div>
+              {importState.message && (
+                <p
+                  className={[
+                    'text-sm',
+                    importState.status === 'success' ? 'text-emerald-600' : 'text-rose-600',
+                  ].join(' ')}
+                  role="status"
+                >
+                  {importState.message}
+                </p>
+              )}
+              <div className="flex justify-end">
+                <Button type="submit" loading={importState.status === 'loading'}>
+                  导入房源
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleImport} className="space-y-3">
+              <label htmlFor="import-json" className="sr-only">
+                房源 JSON
+              </label>
+              <textarea
+                id="import-json"
+                value={jsonText}
+                onChange={(event) => setJsonText(event.target.value)}
+                rows={6}
+                placeholder='{"id": "demo-1", "title": "两室一厅", "price": "6500 元/月", "location": "徐汇区"}'
+                className="w-full rounded-xl border-0 bg-black/30 px-3.5 py-3 font-mono text-xs text-ink-900 ring-1 ring-inset ring-white/10 transition placeholder:text-ink-300 focus:bg-black/45 focus:ring-2 focus:ring-brand-500/80"
+              />
+              {importState.message && (
+                <p
+                  className={[
+                    'text-sm',
+                    importState.status === 'success' ? 'text-emerald-600' : 'text-rose-600',
+                  ].join(' ')}
+                  role="status"
+                >
+                  {importState.message}
+                </p>
+              )}
+              <div className="flex justify-end">
+                <Button type="submit" loading={importState.status === 'loading'} disabled={!jsonText.trim()}>
+                  导入房源
+                </Button>
+              </div>
+            </form>
+          )}
         </CardBody>
       </Card>
 

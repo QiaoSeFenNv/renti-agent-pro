@@ -42,6 +42,8 @@ export const adminService = {
   getCrawlerPlugins: () => apiClient.get('/api/admin/listing-ingestion/crawler-plugins'),
   runCrawlerPlugin: (pluginId, payload = {}) =>
     apiClient.post(`/api/admin/listing-ingestion/crawler-plugins/${pluginId}/run`, payload),
+  stopCrawlerPlugin: (pluginId) =>
+    apiClient.post(`/api/admin/listing-ingestion/crawler-plugins/${pluginId}/stop`),
   getCrawlerSchedules: () => apiClient.get('/api/admin/listing-ingestion/crawler-schedules'),
   updateCrawlerSchedule: (pluginId, payload) =>
     apiClient.put(`/api/admin/listing-ingestion/crawler-schedules/${pluginId}`, payload),

@@ -11,6 +11,8 @@
 
 from __future__ import annotations
 
+import math
+
 from functools import lru_cache
 from typing import Any, TypedDict
 
@@ -133,13 +135,14 @@ def _retrieve_node(state: RentalSearchState) -> dict[str, Any]:
     intent = dict(state.get("intent") or {})
     center = state.get("center")
     city = str(intent.get("city") or state.get("city") or DEFAULT_CITY)
-    radius = int(state.get("radiusMeters") or DEFAULT_RADIUS_METERS)
+    raw_radius = state.get("radiusMeters")
+    radius = DEFAULT_RADIUS_METERS if raw_radius is None else int(raw_radius)
 
     sql_params: dict[str, Any] = {
         "city": city,
         "centerLongitude": center.get("longitude") if center else None,
         "centerLatitude": center.get("latitude") if center else None,
-        "radiusMeters": radius if center else None,
+        "radiusMeters": radius if center and radius > 0 else None,
         "budgetMax": intent.get("budgetMax"),
         "layout": intent.get("layout"),
         "rentType": intent.get("rentType"),
@@ -222,13 +225,16 @@ def _rank_node(state: RentalSearchState) -> dict[str, Any]:
     trace = list(state.get("toolTrace") or [])
     intent = dict(state.get("intent") or {})
     center = state.get("center")
-    radius = int(state.get("radiusMeters") or DEFAULT_RADIUS_METERS)
+    raw_radius = state.get("radiusMeters")
+    radius = DEFAULT_RADIUS_METERS if raw_radius is None else int(raw_radius)
     user_settings = state.get("settings") if isinstance(state.get("settings"), dict) else {}
     limit = _bounded_int(user_settings.get("listingPageSize"), default=10, minimum=1, maximum=50)
 
     recommendations = [
         _score_candidate(item, intent, center, radius) for item in list(state.get("candidates") or [])
     ]
+    if center is not None and radius > 0:
+        recommendations = [row for row in recommendations if row.get("withinRadius") is True]
     sort = str(intent.get("sort") or user_settings.get("defaultSort") or "score_desc")
     recommendations = _sorted_recommendations(recommendations, sort)[:limit]
     trace.append({"tool": "rank", "status": "ok", "summary": f"启发式评分完成，产出 {len(recommendations)} 条推荐（sort={sort}）。"})
@@ -260,9 +266,18 @@ def _score_candidate(
         reasons.append(f"租金 {price} 元/月")
 
     distance_m = _optional_int(listing.get("distanceM"))
-    within_radius = distance_m is not None and distance_m <= radius
+    if distance_m is None and center is not None:
+        # 向量召回的候选没有 SQL 计算的距离字段，用坐标现算，否则会被半径过滤误杀
+        lng, lat = _optional_float(listing.get("longitude")), _optional_float(listing.get("latitude"))
+        if lng is not None and lat is not None:
+            distance_m = int(_distance_meters(
+                float(center.get("longitude") or 0), float(center.get("latitude") or 0), lng, lat))
+    city_wide = radius <= 0
+    within_radius = True if city_wide else (distance_m is not None and distance_m <= radius)
     if center is not None and distance_m is not None:
-        if within_radius:
+        if city_wide:
+            reasons.append(f"距目标点约 {distance_m} 米")
+        elif within_radius:
             score += 8 * (1 - distance_m / max(radius, 1))
             reasons.append(f"距目标点约 {distance_m} 米")
         else:
@@ -520,13 +535,16 @@ def compiled_graph():
 def run_rental_search(payload: dict[str, Any]) -> dict[str, Any]:
     """执行图并组装契约 §A 响应。"""
     center = payload.get("center") if isinstance(payload.get("center"), dict) else None
+    requested_radius = _optional_int(payload.get("radiusMeters"))
+    # radiusMeters<=0 为显式“全城不限半径”；未传时按默认半径
+    city_wide = requested_radius is not None and requested_radius <= 0
     initial: RentalSearchState = {
         "userId": int(payload.get("userId") or 0),
         "query": str(payload.get("query") or ""),
         "city": str(payload.get("city") or DEFAULT_CITY),
         "source": str(payload.get("source") or "text"),
         "requestCenter": center,
-        "radiusMeters": _bounded_int(payload.get("radiusMeters"), default=DEFAULT_RADIUS_METERS, minimum=200, maximum=20000),
+        "radiusMeters": 0 if city_wide else _bounded_int(payload.get("radiusMeters"), default=DEFAULT_RADIUS_METERS, minimum=200, maximum=20000),
         "settings": payload.get("settings") if isinstance(payload.get("settings"), dict) else {},
         "toolTrace": [],
         "warnings": [],
@@ -582,6 +600,8 @@ def run_rental_search(payload: dict[str, Any]) -> dict[str, Any]:
                 "longitude": row.get("longitude"),
                 "latitude": row.get("latitude"),
                 "rentPrice": row.get("rentPrice"),
+                "distanceM": row.get("distanceM"),
+                "withinRadius": row.get("withinRadius"),
             }
             for row in recommendations
             if row.get("longitude") is not None and row.get("latitude") is not None
@@ -616,6 +636,25 @@ def _optional_int(value: Any) -> int | None:
         return int(float(value))
     except (TypeError, ValueError):
         return None
+
+
+def _optional_float(value: Any) -> float | None:
+    if value in (None, ""):
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _distance_meters(lng1: float, lat1: float, lng2: float, lat2: float) -> float:
+    """Haversine 距离（米），与 Java 端 SearchSupport.distanceMeters 对齐。"""
+    radius = 6371000.0
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    d_phi = phi2 - phi1
+    d_lambda = math.radians(lng2 - lng1)
+    a = math.sin(d_phi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(d_lambda / 2) ** 2
+    return 2 * radius * math.asin(math.sqrt(a))
 
 
 def _optional_float(value: Any) -> float | None:

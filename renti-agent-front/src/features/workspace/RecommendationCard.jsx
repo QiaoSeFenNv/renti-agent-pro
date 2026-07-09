@@ -29,8 +29,8 @@ function RecommendationCard({ item, active = false, favorite = false, onSelect, 
       className={[
         'group cursor-pointer rounded-2xl p-3 transition duration-200',
         active
-          ? 'bg-brand-500/[0.08] ring-2 ring-brand-400/70 shadow-glow'
-          : 'bg-white/[0.04] ring-1 ring-white/[0.07] hover:bg-white/[0.07] hover:ring-white/[0.14]',
+          ? 'bg-sky-700/[0.08] ring-2 ring-sky-700/60 shadow-glow'
+          : 'bg-white/[0.04] ring-1 ring-white/[0.07] hover:bg-sky-50/[0.08] hover:ring-sky-700/35',
       ].join(' ')}
     >
       <div className="flex gap-3">
@@ -54,11 +54,6 @@ function RecommendationCard({ item, active = false, favorite = false, onSelect, 
                   d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A1.5 1.5 0 0 0 21.75 19.5V4.5A1.5 1.5 0 0 0 20.25 3H3.75A1.5 1.5 0 0 0 2.25 4.5v15A1.5 1.5 0 0 0 3.75 21Z"
                 />
               </svg>
-            </span>
-          )}
-          {item.match && (
-            <span className="absolute left-1 top-1 rounded-full bg-surface-deep/85 px-1.5 py-0.5 text-[10px] font-medium text-cyan-300 ring-1 ring-cyan-400/30 backdrop-blur">
-              {item.match}
             </span>
           )}
         </div>
@@ -137,7 +132,7 @@ function RecommendationCard({ item, active = false, favorite = false, onSelect, 
             event.stopPropagation()
             onDetail?.(item)
           }}
-          className="shrink-0 rounded-full px-2.5 py-1 text-xs font-medium text-brand-300 transition hover:bg-brand-500/15 hover:text-brand-200"
+          className="shrink-0 rounded-full px-2.5 py-1 text-xs font-medium text-sky-700 transition hover:bg-sky-700/12 hover:text-sky-800"
         >
           详情 →
         </button>

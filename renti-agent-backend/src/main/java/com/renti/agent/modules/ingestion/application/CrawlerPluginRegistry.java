@@ -47,6 +47,7 @@ public class CrawlerPluginRegistry {
         payload.put("description", plugin.description());
         payload.put("defaultOptions", new LinkedHashMap<>(plugin.defaultOptions()));
         payload.put("capabilities", List.copyOf(plugin.capabilities()));
+        payload.put("supportsStop", plugin.supportsStop());
         return payload;
     }
 

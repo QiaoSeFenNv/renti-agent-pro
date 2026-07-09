@@ -59,6 +59,9 @@ public class MapIntentService {
         var city = firstNonEmpty(cleanText(source.get("city"), 40), DEFAULT_CITY);
         var searchSource = firstNonEmpty(str(source.get("source")), "text");
         var settings = userSettingsService.getSettings(userId);
+        var requestedRadius = optionalInt(source.get("radiusMeters"));
+        // radiusMeters<=0 为显式“全城不限半径”；未传时按默认/用户设置取值
+        var cityWide = requestedRadius != null && requestedRadius <= 0;
         var radius = resolveRadius(source, settings);
         var sort = firstNonEmpty(str(source.get("sort")), str(settings.get("defaultSort")), "score_desc");
 
@@ -82,10 +85,10 @@ public class MapIntentService {
                     "suggestedRadiusM", radius)));
         }
 
-        var parsed = parsedPayload(city, locationText, radius, sort, requirement);
+        var parsed = parsedPayload(city, locationText, cityWide ? null : Integer.valueOf(radius), sort, requirement);
 
         if (needsClarification(queryText, center, requirement)) {
-            var result = baseResult(queryText, searchSource, parsed, null, radius, toolTrace, warnings);
+            var result = baseResult(queryText, searchSource, parsed, null, cityWide ? 0 : radius, toolTrace, warnings);
             result.put("intent", "needs_clarification");
             result.put("recommendations", List.of());
             result.put("markers", List.of());
@@ -105,17 +108,19 @@ public class MapIntentService {
                 int distance = (int) Math.round(distanceMeters(centerLng, centerLat,
                         doubleOr(listing.get("longitude"), 0), doubleOr(listing.get("latitude"), 0)));
                 row.put("distanceM", distance);
-                row.put("withinRadius", distance <= radius);
+                row.put("withinRadius", cityWide || distance <= radius);
                 withDistance.add(row);
             }
-            pool.addAll(withDistance.stream().filter(row -> Boolean.TRUE.equals(row.get("withinRadius"))).toList());
-            if (pool.isEmpty()) {
-                warnings.add("半径 " + radius + " 米内暂无在架房源，已为你展示全城匹配结果。");
+            if (cityWide) {
                 pool.addAll(withDistance);
+                toolTrace.add(trace("search_listings", "ok",
+                        "以「" + str(center.get("label")) + "」为中心不限半径，全城召回 " + pool.size() + " 套。"));
+            } else {
+                pool.addAll(withDistance.stream().filter(row -> Boolean.TRUE.equals(row.get("withinRadius"))).toList());
+                toolTrace.add(trace("search_listings", "ok",
+                        "以「" + str(center.get("label")) + "」为中心 " + radius + " 米召回 " + pool.size()
+                                + " 套（全城在架 " + cityListings.size() + " 套）。"));
             }
-            toolTrace.add(trace("search_listings", "ok",
-                    "以「" + str(center.get("label")) + "」为中心 " + radius + " 米召回 " + pool.size()
-                            + " 套（全城在架 " + cityListings.size() + " 套）。"));
         } else {
             for (var listing : cityListings) {
                 pool.add(new LinkedHashMap<>(listing));
@@ -140,11 +145,11 @@ public class MapIntentService {
         toolTrace.add(trace("rank_listings", "ok",
                 "启发式评分完成（预算/通勤/户型/地铁/偏好），返回前 " + recommendations.size() + " 套。"));
 
-        var result = baseResult(queryText, searchSource, parsed, center, radius, toolTrace, warnings);
+        var result = baseResult(queryText, searchSource, parsed, center, cityWide ? 0 : radius, toolTrace, warnings);
         result.put("intent", "rent_search_nearby");
         result.put("recommendations", recommendations);
         result.put("markers", markers(recommendations));
-        result.put("summary", intentSummary(city, center, radius, recommendations.size()));
+        result.put("summary", intentSummary(city, center, radius, cityWide, recommendations.size()));
         result.put("empty", recommendations.isEmpty());
         return result;
     }
@@ -295,7 +300,7 @@ public class MapIntentService {
         return radius == null || radius <= 0 ? 2000 : Math.min(radius, 10000);
     }
 
-    private Map<String, Object> parsedPayload(String city, String locationText, int radius, String sort,
+    private Map<String, Object> parsedPayload(String city, String locationText, Integer radius, String sort,
                                               Map<String, Object> requirement) {
         var constraints = new LinkedHashMap<String, Object>();
         constraints.put("budgetMax", requirement.get("budgetMax"));
@@ -338,6 +343,8 @@ public class MapIntentService {
             marker.put("longitude", item.get("longitude"));
             marker.put("latitude", item.get("latitude"));
             marker.put("rentPrice", item.get("rentPrice"));
+            marker.put("distanceM", item.get("distanceM"));
+            marker.put("withinRadius", item.get("withinRadius"));
             markers.add(marker);
         }
         return markers;
@@ -364,12 +371,14 @@ public class MapIntentService {
         return parts.isEmpty() ? "未识别到明确条件，将按综合评分推荐。" : "已解析需求：" + String.join(" / ", parts) + "。";
     }
 
-    private String intentSummary(String city, Map<String, Object> center, int radius, int count) {
+    private String intentSummary(String city, Map<String, Object> center, int radius, boolean cityWide, int count) {
         if (count == 0) {
             return "没有找到匹配的房源，可以尝试放大搜索半径或调整预算条件。";
         }
         if (center != null) {
-            return "已在「" + str(center.get("label")) + "」周边 " + radius + " 米内为你推荐 " + count + " 套房源，点击卡片查看评分理由。";
+            return cityWide
+                    ? "已以「" + str(center.get("label")) + "」为中心不限半径，在" + city + "全城为你推荐 " + count + " 套房源，点击卡片查看评分理由。"
+                    : "已在「" + str(center.get("label")) + "」周边 " + radius + " 米内为你推荐 " + count + " 套房源，点击卡片查看评分理由。";
         }
         return "已按需求在" + city + "全城为你推荐 " + count + " 套房源，补充位置关键词可获得更精准的周边结果。";
     }

@@ -28,4 +28,14 @@ public interface CrawlerPlugin {
      * 网络失败等异常应尽量在实现内降级为 {ok:false} 结果而非抛出。
      */
     Map<String, Object> run(Map<String, Object> options);
+
+    /** 是否支持停止正在运行的采集（默认不支持） */
+    default boolean supportsStop() {
+        return false;
+    }
+
+    /** 请求停止当前运行；返回是否确实有运行中的任务被终止 */
+    default boolean stopCurrentRun() {
+        return false;
+    }
 }

@@ -9,11 +9,18 @@ const SORT_OPTIONS = [
 function RequirementSummary({ parsed, radius, onRadiusChange, sort, onSortChange, disabled = false }) {
   const locationText = readField(parsed || {}, 'locationText', 'location_text') || ''
   const parsedRadius = toNumber(readField(parsed || {}, 'radiusMeters', 'radius_meters'))
+  const radiusOptions = [
+    { value: 0, label: '全城' },
+    ...RADIUS_OPTIONS.map((value) => ({
+      value,
+      label: value >= 1000 ? `${value / 1000}km` : `${value}m`,
+    })),
+  ]
 
   return (
     <section className="rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/[0.08]" aria-label="需求摘要">
       <h3 className="text-sm font-semibold text-ink-900">需求摘要</h3>
-      {(locationText || Number.isFinite(parsedRadius)) && (
+      {(locationText || (Number.isFinite(parsedRadius) && parsedRadius > 0)) && (
         <dl className="mt-2 space-y-1 text-xs leading-5">
           {locationText && (
             <div className="flex gap-2">
@@ -21,7 +28,7 @@ function RequirementSummary({ parsed, radius, onRadiusChange, sort, onSortChange
               <dd className="truncate font-medium text-ink-700">{locationText}</dd>
             </div>
           )}
-          {Number.isFinite(parsedRadius) && (
+          {Number.isFinite(parsedRadius) && parsedRadius > 0 && (
             <div className="flex gap-2">
               <dt className="shrink-0 text-ink-400">解析半径</dt>
               <dd className="font-mono font-medium text-brand-300">{parsedRadius}m</dd>
@@ -32,12 +39,13 @@ function RequirementSummary({ parsed, radius, onRadiusChange, sort, onSortChange
 
       <div className="mt-3">
         <p className="text-xs font-medium text-ink-500">搜索半径（变更后自动重搜）</p>
-        <div className="mt-1.5 grid grid-cols-4 gap-1.5" role="group" aria-label="搜索半径">
-          {RADIUS_OPTIONS.map((value) => {
+        <div className="mt-1.5 grid grid-cols-5 gap-1.5" role="group" aria-label="搜索半径">
+          {radiusOptions.map((option) => {
+            const { value, label } = option
             const active = radius === value
             return (
               <button
-                key={value}
+                key={value ?? 'city-wide'}
                 type="button"
                 disabled={disabled}
                 onClick={() => onRadiusChange(value)}
@@ -49,7 +57,7 @@ function RequirementSummary({ parsed, radius, onRadiusChange, sort, onSortChange
                     : 'bg-white/[0.05] text-ink-500 ring-1 ring-inset ring-white/10 hover:bg-white/[0.09] hover:text-ink-900',
                 ].join(' ')}
               >
-                {value >= 1000 ? `${value / 1000}km` : `${value}m`}
+                {label}
               </button>
             )
           })}

@@ -6,14 +6,10 @@ $root = "C:\Files\Rentti"
 $mvn = "$root\.tools\apache-maven-3.9.9\bin\mvn.cmd"
 $mvnSettings = "$root\.tools\maven-settings.xml"
 
-# 1. PostgreSQL
-& C:\PostgreSQL\16\bin\pg_isready.exe -h 127.0.0.1 -p 55432 -U renti *> $null
+# 1. PostgreSQL（127.0.0.1:5432/postgres，系统服务）
+& C:\PostgreSQL\16\bin\pg_isready.exe -h 127.0.0.1 -p 5432 -U postgres *> $null
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "[1/4] 启动 PostgreSQL..."
-    & C:\PostgreSQL\16\bin\pg_ctl.exe -D "$root\renti-agent\.local-postgres\data" `
-        -l "$root\renti-agent\.local-postgres\postgres.log" `
-        -o "-p 55432 -c listen_addresses=127.0.0.1" start
-    Start-Sleep -Seconds 3
+    Write-Host "[1/4] PostgreSQL(5432) 未就绪，请先启动 PostgreSQL 服务后重试" -ForegroundColor Yellow
 } else {
     Write-Host "[1/4] PostgreSQL 已在运行"
 }

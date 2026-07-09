@@ -1,82 +1,81 @@
 /** @type {import('tailwindcss').Config} */
 
 /*
- * 黑色科技风设计系统。
+ * Renti Agent 主题化设计系统。
  *
- * 关键决策：沿用全站既有的 token 名（ink/brand/shadow-card…），但把取值整体
- * 重调为暗色语义——ink 色阶反转（50 = 最深页面底色，950 = 最亮文字），
- * brand 两端压暗（50/100 变为深蓝衬底，300/400 为暗底高亮文字蓝），
- * emerald/amber/rose/sky 的 50~200 与 700~900 同步重调。
- * 这样存量页面的 bg-ink-50 / text-ink-900 / bg-emerald-50 等组合无需改动
- * 即可获得正确的暗色观感，新页面按同一语义继续取用。
+ * 关键决策：沿用全站既有的 token 名（ink/brand/shadow-card…），但把颜色
+ * 取值交给 CSS 变量。这样存量页面的 bg-ink-50 / text-ink-900 等组合无需
+ * 大面积改动，就可以跟随 html[data-theme] 在亮色/暗色之间切换。
  */
+const withOpacity = (name) => `rgb(var(${name}) / <alpha-value>)`
+
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
       colors: {
         brand: {
-          50: '#0c142e',
-          100: '#152352',
-          200: '#1e3272',
-          300: '#8fb0ff',
-          400: '#6690ff',
-          500: '#477bff',
-          600: '#3566f0',
-          700: '#2b52cc',
-          800: '#1f3d9e',
-          900: '#182f78',
-          950: '#0a1330',
+          50: withOpacity('--color-brand-50'),
+          100: withOpacity('--color-brand-100'),
+          200: withOpacity('--color-brand-200'),
+          300: withOpacity('--color-brand-300'),
+          400: withOpacity('--color-brand-400'),
+          500: withOpacity('--color-brand-500'),
+          600: withOpacity('--color-brand-600'),
+          700: withOpacity('--color-brand-700'),
+          800: withOpacity('--color-brand-800'),
+          900: withOpacity('--color-brand-900'),
+          950: withOpacity('--color-brand-950'),
         },
         ink: {
-          50: '#08090f',
-          100: '#11131d',
-          200: '#1e2233',
-          300: '#39405c',
-          400: '#6b7694',
-          500: '#8b96b3',
-          600: '#aab4cf',
-          700: '#c6cee4',
-          800: '#dde3f2',
-          900: '#eef1fa',
-          950: '#f7f9ff',
+          50: withOpacity('--color-ink-50'),
+          100: withOpacity('--color-ink-100'),
+          200: withOpacity('--color-ink-200'),
+          300: withOpacity('--color-ink-300'),
+          400: withOpacity('--color-ink-400'),
+          500: withOpacity('--color-ink-500'),
+          600: withOpacity('--color-ink-600'),
+          700: withOpacity('--color-ink-700'),
+          800: withOpacity('--color-ink-800'),
+          900: withOpacity('--color-ink-900'),
+          950: withOpacity('--color-ink-950'),
         },
         surface: {
-          DEFAULT: '#0d0f18',
-          raised: '#141828',
-          deep: '#05060b',
+          DEFAULT: withOpacity('--color-surface'),
+          raised: withOpacity('--color-surface-raised'),
+          deep: withOpacity('--color-surface-deep'),
         },
         emerald: {
-          50: '#062218',
-          100: '#0a3526',
-          200: '#0f4d37',
-          700: '#34d399',
-          800: '#6ee7b7',
-          900: '#a7f3d0',
+          50: withOpacity('--color-emerald-50'),
+          100: withOpacity('--color-emerald-100'),
+          200: withOpacity('--color-emerald-200'),
+          700: withOpacity('--color-emerald-700'),
+          800: withOpacity('--color-emerald-800'),
+          900: withOpacity('--color-emerald-900'),
         },
         amber: {
-          50: '#241703',
-          100: '#3a2604',
-          200: '#553804',
-          700: '#fbbf24',
-          800: '#fcd34d',
-          900: '#fde68a',
+          50: withOpacity('--color-amber-50'),
+          100: withOpacity('--color-amber-100'),
+          200: withOpacity('--color-amber-200'),
+          700: withOpacity('--color-amber-700'),
+          800: withOpacity('--color-amber-800'),
+          900: withOpacity('--color-amber-900'),
         },
         rose: {
-          50: '#2a0a12',
-          100: '#45101d',
-          200: '#5f1627',
-          700: '#fb7185',
-          800: '#fda4af',
-          900: '#fecdd3',
+          50: withOpacity('--color-rose-50'),
+          100: withOpacity('--color-rose-100'),
+          200: withOpacity('--color-rose-200'),
+          700: withOpacity('--color-rose-700'),
+          800: withOpacity('--color-rose-800'),
+          900: withOpacity('--color-rose-900'),
         },
         sky: {
-          50: '#07172a',
-          100: '#0c2440',
-          200: '#123458',
-          700: '#7dd3fc',
-          800: '#bae6fd',
-          900: '#e0f2fe',
+          50: withOpacity('--color-sky-50'),
+          100: withOpacity('--color-sky-100'),
+          200: withOpacity('--color-sky-200'),
+          700: withOpacity('--color-sky-700'),
+          800: withOpacity('--color-sky-800'),
+          900: withOpacity('--color-sky-900'),
         },
       },
       fontFamily: {
@@ -106,8 +105,8 @@ export default {
         ],
       },
       boxShadow: {
-        card: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 10px 32px -12px rgba(0,0,0,0.65)',
-        float: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 24px 56px -16px rgba(0,0,0,0.8)',
+        card: 'var(--shadow-card)',
+        float: 'var(--shadow-float)',
         glow: '0 0 24px -4px rgba(71,123,255,0.45)',
         'glow-lg': '0 8px 48px -8px rgba(71,123,255,0.5)',
         'glow-cyan': '0 0 24px -4px rgba(34,211,238,0.4)',
@@ -117,8 +116,8 @@ export default {
         '3xl': '1.5rem',
       },
       backgroundImage: {
-        'brand-gradient': 'linear-gradient(135deg, #477bff 0%, #22d3ee 100%)',
-        'brand-gradient-soft': 'linear-gradient(135deg, rgba(71,123,255,0.16) 0%, rgba(34,211,238,0.10) 100%)',
+        'brand-gradient': 'linear-gradient(135deg, rgb(var(--color-brand-500)) 0%, rgb(var(--color-sky-700)) 100%)',
+        'brand-gradient-soft': 'linear-gradient(135deg, rgb(var(--color-brand-500) / 0.16) 0%, rgb(var(--color-sky-700) / 0.10) 100%)',
       },
     },
   },

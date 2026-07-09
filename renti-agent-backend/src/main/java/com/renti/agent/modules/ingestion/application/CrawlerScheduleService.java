@@ -55,6 +55,23 @@ public class CrawlerScheduleService {
         return result;
     }
 
+    /** 停止插件当前运行（仅支持 stoppable 的插件，如小红书渠道的采集子进程） */
+    public Map<String, Object> stopPlugin(String pluginId) {
+        var plugin = pluginRegistry.find(pluginId).orElse(null);
+        if (plugin == null) {
+            return IngestionService.error("plugin_not_found", "采集插件不存在。");
+        }
+        if (!plugin.supportsStop()) {
+            return IngestionService.error("stop_unsupported", "该插件不支持停止运行。");
+        }
+        boolean stopped = plugin.stopCurrentRun();
+        var body = new LinkedHashMap<String, Object>();
+        body.put("ok", true);
+        body.put("stopped", stopped);
+        body.put("summary", stopped ? "已发送停止指令，采集进程正在终止。" : "当前没有正在运行的采集任务。");
+        return body;
+    }
+
     /** 直连爬取（不落调度运行记录，对齐旧 /crawl/lianjia-shanghai 端点） */
     @Transactional
     public Map<String, Object> crawlDirect(String pluginId, Map<String, Object> payload) {

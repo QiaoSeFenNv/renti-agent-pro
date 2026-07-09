@@ -9,9 +9,3 @@ export const cityService = {
   /** 首页动态配置（heroBadge 等） */
   getHomeConfig: () => apiClient.get('/api/home/config'),
 }
-
-/** 邮箱订阅 API */
-export const subscriptionService = {
-  subscribe: (email) => apiClient.post('/api/home/subscribe', { email }),
-  stats: () => apiClient.get('/api/home/subscribe/stats'),
-}
