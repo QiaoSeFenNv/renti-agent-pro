@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import json
+import re
 import time
 from datetime import UTC, datetime
 from typing import Any
@@ -342,6 +343,16 @@ def _value_score(listing: dict[str, Any], environment_score: int, commute_score:
 # ---------------------------------------------------------------------------
 
 
+def _strip_markdown(text: str) -> str:
+    """聊天气泡按纯文本渲染：去掉标题/加粗/行内代码等 Markdown 排版符号。"""
+    value = str(text or "")
+    value = re.sub(r"^#{1,6}\s*", "", value, flags=re.MULTILINE)
+    value = re.sub(r"\*\*([^*]+)\*\*", lambda m: m.group(1), value)
+    value = re.sub(r"(?<!\*)\*([^*\n]+)\*(?!\*)", lambda m: m.group(1), value)
+    value = value.replace("`", "")
+    return value.strip()
+
+
 def run_property_chat(payload: dict[str, Any]) -> dict[str, Any]:
     listing = payload.get("listing") if isinstance(payload.get("listing"), dict) else {}
     listing_id = str(payload.get("listingId") or listing.get("listingId") or listing.get("id") or "")
@@ -435,6 +446,7 @@ def _chat_with_llm(
         citations = _citation_rows(parsed.get("citations"))
     except Exception:
         pass
+    answer = _strip_markdown(answer)
     if not answer:
         raise ValueError("empty answer")
     if not citations:
@@ -450,6 +462,7 @@ def _chat_system_prompt(listing: dict[str, Any], listing_id: str) -> str:
         "你只能根据下方房源上下文、对话历史和工具返回结果回答；"
         "禁止编造联系方式、可租状态、价格承诺或数据库外事实；字段缺失要说明待核验。"
         "需要对比相似或同小区房源时可调用提供的工具。"
+        "answer 必须是纯文本短段落（可用「·」列点），不要使用 Markdown 表格/标题/加粗等排版符号，前端以纯文本气泡展示。"
         "最终回答请只输出 JSON 对象：{\"answer\": \"回答文本\", \"citations\": [{\"label\": \"依据名\", \"value\": \"依据内容\"}]}。"
         f"\n房源上下文：{context}"
     )
