@@ -116,6 +116,16 @@ public class ListingEntity {
     @Column(nullable = false, length = 16)
     private String status = "active";
 
+    /**
+     * 官方核验状态：official_confirmed（调官方接口确认）| platform_certified（来源平台自标官方核验）
+     * | official_failed（官方查得未通过/信息不符）| unverified（无核验信号）| null（未跑核验器）。
+     */
+    @Column(name = "verified", length = 24)
+    private String verified;
+
+    @Column(name = "verified_at")
+    private OffsetDateTime verifiedAt;
+
     @Column(name = "unavailable_reason", columnDefinition = "text")
     private String unavailableReason;
 

@@ -9,18 +9,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
- * 链家「上海租房」插件（id=lianjia_shanghai, provider=lianjia）。
+ * 豆瓣「上海租房」小组 UGC 插件（id=douban_shanghai, provider=douban）：调用 scripts/douban_ingest.cjs
+ * 无头渲染豆瓣上海租房小组讨论列表+帖子正文，DeepSeek 结构化抽取（复用小红书那套 LLM 抽取管道），
+ * 取回 items 后进程内 {@link IngestionService#importRows} 落候选审核流。
  *
- * <p>原实现走 Jsoup 静态 HTTP 抓取，2026-06 起被间歇性反爬拦截而断粮。现改为调用
- * scripts/beike_ingest.cjs 用本机 Chrome 无头渲染 sh.lianjia.com 列表页（与贝壳同脚本，--provider 区分），
- * 恢复产出。列表页带布尔「官方核验」旗标（存 listing.raw.gov_certified）。</p>
+ * <p>豆瓣租房小组以个人直租、无中介房源为主。UGC 质量参差，全部进入人工审核（不自动发布）；
+ * 有小区名的房源经高德补坐标。抓取/抽取失败降级为 {ok:false} 并记录 failed 任务。</p>
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class LianjiaShanghaiPlugin implements CrawlerPlugin {
+public class DoubanShanghaiPlugin implements CrawlerPlugin {
 
-    public static final String DEFAULT_URL = "https://sh.lianjia.com/zufang/";
+    static final String BASE_URL = "https://www.douban.com/group/";
+    static final String SCRIPT_PATH = "scripts/douban_ingest.cjs";
 
     private final IngestionService ingestionService;
     private final NodeCrawlerRunner crawlerRunner;
@@ -31,17 +33,17 @@ public class LianjiaShanghaiPlugin implements CrawlerPlugin {
 
     @Override
     public String id() {
-        return "lianjia_shanghai";
+        return "douban_shanghai";
     }
 
     @Override
     public String label() {
-        return "链家上海公开列表";
+        return "豆瓣上海租房小组";
     }
 
     @Override
     public String provider() {
-        return "lianjia";
+        return "douban";
     }
 
     @Override
@@ -51,22 +53,21 @@ public class LianjiaShanghaiPlugin implements CrawlerPlugin {
 
     @Override
     public String description() {
-        return "用本机 Chrome 无头渲染 sh.lianjia.com 公开出租列表页，读取公开房源卡片（含官方核验旗标），"
-                + "进入候选审核流；不登录、不绕过验证码。支持按区多入口轮抓缓解区域倒挂。";
+        return "无头渲染豆瓣上海租房小组讨论列表与帖子正文，DeepSeek 结构化抽取租金/户型/区域（复用小红书 LLM 抽取管道）；"
+                + "以个人直租、无中介房源为主，全部进入人工审核。";
     }
 
     @Override
     public Map<String, Object> defaultOptions() {
         return Map.of(
-                "pages", 2,
-                "limit", 120,
-                "districts", "",
+                "limit", 30,
+                "groups", "",
                 "cleanupMissing", false);
     }
 
     @Override
     public List<String> capabilities() {
-        return List.of("one_click_run", "scheduled_run", "stoppable", "gov_certification", "review_flow", "pagination");
+        return List.of("one_click_run", "scheduled_run", "stoppable", "llm_extract", "no_agent", "review_flow");
     }
 
     @Override
@@ -90,27 +91,26 @@ public class LianjiaShanghaiPlugin implements CrawlerPlugin {
     @Override
     public Map<String, Object> run(Map<String, Object> options) {
         var opts = options == null ? Map.<String, Object>of() : options;
-        boolean cleanupMissing = Boolean.TRUE.equals(opts.get("cleanupMissing"));
         stopRequested = false;
 
         List<Map<String, Object>> items;
         try {
-            items = crawlerRunner.fetchItems(provider(), opts, process -> currentProcess = process);
+            items = crawlerRunner.fetchItems(SCRIPT_PATH, provider(), opts, process -> currentProcess = process);
         } catch (Exception exception) {
             var message = stopRequested
-                    ? "链家采集已被手动停止。"
-                    : "链家采集脚本执行失败：" + String.valueOf(exception.getMessage());
+                    ? "豆瓣采集已被手动停止。"
+                    : "豆瓣采集脚本执行失败：" + String.valueOf(exception.getMessage());
             log.warn("[{}] {}", id(), message);
             var job = ingestionService.recordFailedJob(
-                    id(), provider(), "public_listing_page", DEFAULT_URL, city(), message);
+                    id(), provider(), "public_listing_page", BASE_URL, city(), message);
             return failResult(job.getId(), message);
         } finally {
             currentProcess = null;
         }
         if (items.isEmpty()) {
-            var message = "未抓取到可解析的上海房源列表。目标站点可能返回了空页、验证码或结构变化。";
+            var message = "豆瓣未取回可导入的房源（小组页可能需要登录或返回空列表，稍后重试）。";
             var job = ingestionService.recordFailedJob(
-                    id(), provider(), "public_listing_page", DEFAULT_URL, city(), message);
+                    id(), provider(), "public_listing_page", BASE_URL, city(), message);
             return failResult(job.getId(), message);
         }
         geocodeEnricher.enrichAll(items, city());
@@ -122,10 +122,10 @@ public class LianjiaShanghaiPlugin implements CrawlerPlugin {
         importPayload.put("sourceType", "public_listing_page");
         importPayload.put("jobType", "crawler");
         importPayload.put("city", city());
-        importPayload.put("baseUrl", DEFAULT_URL);
-        importPayload.put("cleanupMissing", cleanupMissing);
+        importPayload.put("baseUrl", BASE_URL);
+        importPayload.put("cleanupMissing", false);
         var result = ingestionService.importRows(importPayload);
-        result.put("summary", "链家上海公开列表采集完成：抓取 " + items.size() + " 条，" + result.get("summary"));
+        result.put("summary", "豆瓣上海租房采集完成：抓取 " + items.size() + " 条，" + result.get("summary"));
         return result;
     }
 

@@ -83,6 +83,7 @@ public class IngestionService {
         int updated = 0;
         int rejected = 0;
         int autoSynced = 0;
+        int mergedDuplicates = 0;
         int coordinateBackfilled = 0;
         var seenListingIds = new ArrayList<String>();
         var context = Map.of("sourceName", sourceName, "provider", provider, "city", city);
@@ -94,8 +95,16 @@ public class IngestionService {
                 coordinateBackfilled++;
             }
             var quality = ListingNormalizer.qualityReport(listing);
-            var result = upsertCandidate(job.getId(), listing, normalized.dedupeKey());
+            var result = upsertCandidate(job.getId(), listing, normalized.dedupeKey(), normalized.fingerprint());
             seenListingIds.add(String.valueOf(listing.get("id")));
+
+            // 跨源去重：新候选若命中其他来源的同物理指纹，则并入主记录、不重复入库/发布
+            if (result.created() && "pending".equals(result.candidate().getStatus())
+                    && mergeCrossSourceDuplicate(result.candidate(), normalized.fingerprint(), provider)) {
+                mergedDuplicates++;
+                continue;
+            }
+
             if (result.created()) {
                 created++;
             } else {
@@ -126,13 +135,14 @@ public class IngestionService {
         response.put("totalInput", rows.size());
         response.put("candidatesCreated", created);
         response.put("candidatesUpdated", updated);
+        response.put("mergedDuplicates", mergedDuplicates);
         response.put("qualityBlocked", rejected);
         response.put("publishedSynced", autoSynced);
         response.put("coordinateBackfilled", coordinateBackfilled);
         response.put("staleCandidatesRejected", cleanup.get("staleCandidatesRejected"));
         response.put("unavailableListings", cleanup.get("unavailableListings"));
         response.put("summary", importSummary(rows.size(), created, updated, rejected, autoSynced,
-                coordinateBackfilled, cleanup));
+                coordinateBackfilled, mergedDuplicates, cleanup));
         overview().forEach(response::putIfAbsent);
         return response;
     }
@@ -346,11 +356,12 @@ public class IngestionService {
     private record UpsertResult(ListingCandidateEntity candidate, boolean created) {
     }
 
-    private UpsertResult upsertCandidate(Long jobId, Map<String, Object> listing, String dedupeKey) {
+    private UpsertResult upsertCandidate(Long jobId, Map<String, Object> listing, String dedupeKey, String fingerprint) {
         var existing = candidateRepository.findByDedupeKey(dedupeKey).orElse(null);
         var candidate = existing == null ? new ListingCandidateEntity() : existing;
         candidate.setJobId(jobId);
         candidate.setDedupeKey(dedupeKey);
+        candidate.setFingerprint(fingerprint);
         candidate.setListingId(ListingNormalizer.cleanText(listing.get("id"), 96));
         candidate.setPayload(new LinkedHashMap<>(listing));
         candidate.setCity(ListingNormalizer.cleanText(listing.get("city"), 40));
@@ -364,6 +375,76 @@ public class IngestionService {
             candidate.setStatus("pending");
         }
         return new UpsertResult(candidateRepository.save(candidate), existing == null);
+    }
+
+    /**
+     * 跨源去重：新候选若与其他来源的同物理指纹房源命中，则并入主记录——
+     * 把本源作为 altSource 记入主记录，本候选标记为 duplicate（不进审核队列、不重复发布）。
+     * 若本源带官方核验旗标而主记录没有，则用本源信息升级主记录（并在主记录已发布时同步回房源库）。
+     *
+     * @return 是否已作为重复项并入
+     */
+    @SuppressWarnings("unchecked")
+    private boolean mergeCrossSourceDuplicate(ListingCandidateEntity candidate, String fingerprint, String provider) {
+        if (fingerprint == null || fingerprint.isEmpty()) {
+            return false;
+        }
+        var primary = candidateRepository.findCrossSourcePrimary(fingerprint, provider).orElse(null);
+        if (primary == null || primary.getId().equals(candidate.getId())) {
+            return false;
+        }
+
+        var dupPayload = candidate.getPayload();
+        var primaryPayload = primary.getPayload();
+        var primaryRaw = primaryPayload.get("raw") instanceof Map<?, ?> map
+                ? new LinkedHashMap<String, Object>((Map<String, Object>) map) : new LinkedHashMap<String, Object>();
+
+        var altSources = primaryRaw.get("altSources") instanceof List<?> list
+                ? new ArrayList<Object>(list) : new ArrayList<Object>();
+        var alt = new LinkedHashMap<String, Object>();
+        alt.put("provider", dupPayload.get("provider"));
+        alt.put("source", dupPayload.get("source"));
+        alt.put("sourceUrl", dupPayload.get("sourceUrl"));
+        alt.put("rentPrice", dupPayload.get("rentPrice"));
+        alt.put("govCertified", rawFlag(dupPayload, "gov_certified"));
+        boolean alreadyRecorded = altSources.stream()
+                .anyMatch(item -> item instanceof Map<?, ?> map
+                        && String.valueOf(map.get("provider")).equals(String.valueOf(dupPayload.get("provider"))));
+        if (!alreadyRecorded) {
+            altSources.add(alt);
+        }
+        primaryRaw.put("altSources", altSources);
+
+        // 若本源官方核验而主记录未标注，则升级主记录的核验旗标
+        boolean upgraded = false;
+        if (rawFlag(dupPayload, "gov_certified") && !rawFlag(primaryPayload, "gov_certified")) {
+            primaryRaw.put("gov_certified", true);
+            upgraded = true;
+        }
+        primaryPayload.put("raw", primaryRaw);
+        primary.setPayload(primaryPayload);
+        primary.setUpdatedAt(OffsetDateTime.now());
+        candidateRepository.save(primary);
+        if (upgraded && "approved".equals(primary.getStatus())) {
+            publish(primary);
+        }
+
+        candidate.setStatus("duplicate");
+        candidate.setReason("跨源重复，已并入 " + primary.getProvider() + " 候选 #" + primary.getId());
+        candidate.setReviewedAt(OffsetDateTime.now());
+        candidate.setUpdatedAt(OffsetDateTime.now());
+        candidateRepository.save(candidate);
+        log.info("Cross-source dedupe: candidate {} ({}) merged into primary {} ({})",
+                candidate.getId(), provider, primary.getId(), primary.getProvider());
+        return true;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static boolean rawFlag(Map<String, Object> payload, String key) {
+        if (Boolean.TRUE.equals(payload.get(key))) {
+            return true;
+        }
+        return payload.get("raw") instanceof Map<?, ?> map && Boolean.TRUE.equals(((Map<String, Object>) map).get(key));
     }
 
     private void markReviewed(ListingCandidateEntity candidate, String status, String reason) {
@@ -532,11 +613,15 @@ public class IngestionService {
     }
 
     private static String importSummary(int total, int created, int updated, int blocked,
-                                        int synced, int coordinateBackfilled, Map<String, Integer> cleanup) {
+                                        int synced, int coordinateBackfilled, int mergedDuplicates,
+                                        Map<String, Integer> cleanup) {
         var parts = new ArrayList<String>();
         parts.add("已导入 " + total + " 条");
         parts.add("新增候选 " + created + " 条");
         parts.add("更新 " + updated + " 条");
+        if (mergedDuplicates > 0) {
+            parts.add("跨源合并 " + mergedDuplicates + " 条");
+        }
         if (blocked > 0) {
             parts.add("暂不可发布 " + blocked + " 条");
         }

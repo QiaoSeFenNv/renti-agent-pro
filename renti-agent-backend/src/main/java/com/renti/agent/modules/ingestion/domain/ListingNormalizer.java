@@ -38,7 +38,8 @@ public final class ListingNormalizer {
     }
 
     /** 规范化候选结果 */
-    public record Normalized(Map<String, Object> listing, Map<String, Object> quality, String dedupeKey) {
+    public record Normalized(Map<String, Object> listing, Map<String, Object> quality, String dedupeKey,
+                             String fingerprint) {
     }
 
     @SuppressWarnings("unchecked")
@@ -101,10 +102,14 @@ public final class ListingNormalizer {
         listing.put("images", images);
         listing.put("raw", raw);
 
+        var fingerprint = fingerprint(community, layout, rentPrice, areaSqm, longitude, latitude);
+        listing.put("fingerprint", fingerprint);
+
         return new Normalized(
                 listing,
                 qualityReport(listing),
-                dedupeKey(provider, externalId, sourceUrl, community, title, rentPrice, layout, areaSqm));
+                dedupeKey(provider, externalId, sourceUrl, community, title, rentPrice, layout, areaSqm),
+                fingerprint);
     }
 
     /** 质量报告：missingFields/warnings/score/publishable（对齐旧 _quality_report） */
@@ -157,7 +162,35 @@ public final class ListingNormalizer {
         return sha256Hex(raw);
     }
 
-    /** 空值判定：null / 空串 / 数字 0（对齐旧 _is_empty） */
+    /**
+     * 物理房源指纹（与 provider 无关）：用于跨源去重——同一套房子在贝壳/链家/安居客上被识别为同一物理房源。
+     * 组成：小区 + 户型 + 面积档（就近 5㎡）+ 租金档（就近 100 元）+ 坐标格（geohash≈150m）。
+     * 小区为空时返回空串（不参与跨源合并，避免误合并信息不全的房源）。
+     */
+    public static String fingerprint(String community, String layout, int rentPrice, int areaSqm,
+                                     Double longitude, Double latitude) {
+        var comm = community == null ? "" : community.replaceAll("\\s+", "");
+        if (comm.isEmpty()) {
+            return "";
+        }
+        int areaBucket = areaSqm <= 0 ? 0 : Math.round(areaSqm / 5.0f) * 5;
+        int rentBucket = rentPrice <= 0 ? 0 : Math.round(rentPrice / 100.0f) * 100;
+        var geoCell = geoCell(longitude, latitude);
+        var raw = String.join("|", comm, layout == null ? "" : layout,
+                String.valueOf(areaBucket), String.valueOf(rentBucket), geoCell);
+        return sha256Hex(raw);
+    }
+
+    /** 坐标网格：经纬度各截断到 0.002°（≈150-220m），容忍不同源坐标的细微差异；无坐标返回空串。 */
+    private static String geoCell(Double longitude, Double latitude) {
+        if (longitude == null || latitude == null || longitude == 0.0 || latitude == 0.0) {
+            return "";
+        }
+        long lonCell = Math.round(longitude / 0.002);
+        long latCell = Math.round(latitude / 0.002);
+        return lonCell + "," + latCell;
+    }
+
     public static boolean isEmpty(Object value) {
         if (value == null || "".equals(value)) {
             return true;

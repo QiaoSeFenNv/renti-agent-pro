@@ -49,7 +49,23 @@ public class ListingPayloadMapper {
         listing.put("image", orEmpty(entity.getImage()));
         listing.put("images", entity.getImages() == null ? List.of() : entity.getImages());
         listing.put("raw", entity.getRaw() == null ? Map.of() : entity.getRaw());
+        listing.put("verified", resolveVerified(entity));
         return listing;
+    }
+
+    /**
+     * 核验状态：优先取实体 verified 列；未跑核验器（null）时按来源自标的官方核验旗标降级为
+     * platform_certified；否则 unverified。前端据此显示核验徽章。
+     */
+    public static String resolveVerified(ListingEntity entity) {
+        if (entity.getVerified() != null && !entity.getVerified().isEmpty()) {
+            return entity.getVerified();
+        }
+        var raw = entity.getRaw();
+        if (raw != null && Boolean.TRUE.equals(raw.get("gov_certified"))) {
+            return "platform_certified";
+        }
+        return "unverified";
     }
 
     /** 管理端/详情外层结构（旧 _published_from_row） */
@@ -194,6 +210,8 @@ public class ListingPayloadMapper {
         dataSource.put("reliabilityNote", "该记录来自正式房源库，仍建议跳转来源链接核验价格、图片、可租状态和联系方式。");
         dataSource.put("links", links);
         detail.put("dataSource", dataSource);
+        detail.put("verified", resolveVerified(entity));
+        detail.put("verifiedAt", entity.getVerifiedAt() == null ? "" : entity.getVerifiedAt().toString());
         return detail;
     }
 

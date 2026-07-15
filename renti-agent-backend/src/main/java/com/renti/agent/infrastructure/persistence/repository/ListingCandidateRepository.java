@@ -16,6 +16,22 @@ public interface ListingCandidateRepository extends JpaRepository<ListingCandida
 
     Optional<ListingCandidateEntity> findByDedupeKey(String dedupeKey);
 
+    /**
+     * 跨源去重：找同一物理指纹、来自其他来源、仍在流转（pending/approved/duplicate 除外的活跃态）的候选，
+     * 已发布(approved)优先、其次最早创建者作为主记录。
+     */
+    @Query(value = """
+            SELECT * FROM listing_candidates
+            WHERE fingerprint = :fingerprint
+              AND fingerprint <> ''
+              AND provider <> :provider
+              AND status IN ('pending', 'approved')
+            ORDER BY CASE status WHEN 'approved' THEN 0 ELSE 1 END, created_at ASC
+            LIMIT 1
+            """, nativeQuery = true)
+    Optional<ListingCandidateEntity> findCrossSourcePrimary(@Param("fingerprint") String fingerprint,
+                                                            @Param("provider") String provider);
+
     Page<ListingCandidateEntity> findByStatus(String status, Pageable pageable);
 
     long countByStatus(String status);

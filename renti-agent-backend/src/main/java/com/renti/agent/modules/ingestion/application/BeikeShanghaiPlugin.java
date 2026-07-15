@@ -9,18 +9,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
- * 链家「上海租房」插件（id=lianjia_shanghai, provider=lianjia）。
+ * 贝壳找房「上海租房」插件（id=beike_shanghai, provider=beike）：调用 scripts/beike_ingest.cjs
+ * 用 puppeteer-core 无头渲染 sh.zu.ke.com 列表页，取回 items 后进程内 {@link IngestionService#importRows}
+ * 落候选审核流。贝壳与链家共用同一抓取脚本（--provider 区分）。
  *
- * <p>原实现走 Jsoup 静态 HTTP 抓取，2026-06 起被间歇性反爬拦截而断粮。现改为调用
- * scripts/beike_ingest.cjs 用本机 Chrome 无头渲染 sh.lianjia.com 列表页（与贝壳同脚本，--provider 区分），
- * 恢复产出。列表页带布尔「官方核验」旗标（存 listing.raw.gov_certified）。</p>
+ * <p>列表页带布尔「官方核验」旗标（存入 listing.raw.gov_certified），真正的核验编号由异步核验器
+ * 进详情页取得后反查官方平台。抓取失败降级为 {ok:false} 并记录 failed 任务。</p>
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class LianjiaShanghaiPlugin implements CrawlerPlugin {
+public class BeikeShanghaiPlugin implements CrawlerPlugin {
 
-    public static final String DEFAULT_URL = "https://sh.lianjia.com/zufang/";
+    static final String BASE_URL = "https://sh.zu.ke.com/zufang/";
 
     private final IngestionService ingestionService;
     private final NodeCrawlerRunner crawlerRunner;
@@ -31,17 +32,17 @@ public class LianjiaShanghaiPlugin implements CrawlerPlugin {
 
     @Override
     public String id() {
-        return "lianjia_shanghai";
+        return "beike_shanghai";
     }
 
     @Override
     public String label() {
-        return "链家上海公开列表";
+        return "贝壳找房上海租房";
     }
 
     @Override
     public String provider() {
-        return "lianjia";
+        return "beike";
     }
 
     @Override
@@ -51,7 +52,7 @@ public class LianjiaShanghaiPlugin implements CrawlerPlugin {
 
     @Override
     public String description() {
-        return "用本机 Chrome 无头渲染 sh.lianjia.com 公开出租列表页，读取公开房源卡片（含官方核验旗标），"
+        return "用本机 Chrome 无头渲染 sh.zu.ke.com 公开租房列表页，读取公开房源卡片（含官方核验旗标），"
                 + "进入候选审核流；不登录、不绕过验证码。支持按区多入口轮抓缓解区域倒挂。";
     }
 
@@ -98,19 +99,19 @@ public class LianjiaShanghaiPlugin implements CrawlerPlugin {
             items = crawlerRunner.fetchItems(provider(), opts, process -> currentProcess = process);
         } catch (Exception exception) {
             var message = stopRequested
-                    ? "链家采集已被手动停止。"
-                    : "链家采集脚本执行失败：" + String.valueOf(exception.getMessage());
+                    ? "贝壳采集已被手动停止。"
+                    : "贝壳采集脚本执行失败：" + String.valueOf(exception.getMessage());
             log.warn("[{}] {}", id(), message);
             var job = ingestionService.recordFailedJob(
-                    id(), provider(), "public_listing_page", DEFAULT_URL, city(), message);
+                    id(), provider(), "public_listing_page", BASE_URL, city(), message);
             return failResult(job.getId(), message);
         } finally {
             currentProcess = null;
         }
         if (items.isEmpty()) {
-            var message = "未抓取到可解析的上海房源列表。目标站点可能返回了空页、验证码或结构变化。";
+            var message = "贝壳未取回可导入的房源（列表页可能返回空页或验证码，稍后重试或减少页数）。";
             var job = ingestionService.recordFailedJob(
-                    id(), provider(), "public_listing_page", DEFAULT_URL, city(), message);
+                    id(), provider(), "public_listing_page", BASE_URL, city(), message);
             return failResult(job.getId(), message);
         }
         geocodeEnricher.enrichAll(items, city());
@@ -122,10 +123,10 @@ public class LianjiaShanghaiPlugin implements CrawlerPlugin {
         importPayload.put("sourceType", "public_listing_page");
         importPayload.put("jobType", "crawler");
         importPayload.put("city", city());
-        importPayload.put("baseUrl", DEFAULT_URL);
+        importPayload.put("baseUrl", BASE_URL);
         importPayload.put("cleanupMissing", cleanupMissing);
         var result = ingestionService.importRows(importPayload);
-        result.put("summary", "链家上海公开列表采集完成：抓取 " + items.size() + " 条，" + result.get("summary"));
+        result.put("summary", "贝壳上海租房采集完成：抓取 " + items.size() + " 条，" + result.get("summary"));
         return result;
     }
 

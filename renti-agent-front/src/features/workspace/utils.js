@@ -101,6 +101,7 @@ export function normalizeRecommendation(item = {}) {
     image,
     images,
     detail,
+    verified: readField(item, 'verified') || readField(detail || {}, 'verified') || '',
   }
 }
 
@@ -186,4 +187,22 @@ export function radiusToZoom(radiusMeters) {
   if (radius <= 1000) return 15
   if (radius <= 2000) return 14
   return 13
+}
+
+/**
+ * 核验状态 → 徽章展示。official_confirmed（官方接口确认）显示绿色「官方核验」，
+ * platform_certified（来源平台自标官方核验）显示蓝色「平台核验」，official_failed 显示红色告警；
+ * unverified / 空返回 null（不展示，避免噪声）。
+ */
+export function verificationBadge(verified) {
+  switch (verified) {
+    case 'official_confirmed':
+      return { tone: 'success', label: '官方核验', icon: '✓', title: '已通过上海市住房租赁公共服务平台核验' }
+    case 'platform_certified':
+      return { tone: 'info', label: '平台核验', icon: '✓', title: '来源平台标注为官方核验房源（未经我方独立复核）' }
+    case 'official_failed':
+      return { tone: 'danger', label: '核验存疑', icon: '⚠', title: '官方核验未通过或信息不符，请谨慎核实' }
+    default:
+      return null
+  }
 }

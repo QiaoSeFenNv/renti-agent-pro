@@ -12,7 +12,7 @@ import EvaluationCards from '../features/property/EvaluationCards.jsx'
 import Gallery from '../features/property/Gallery.jsx'
 import ScoreRing from '../features/property/ScoreRing.jsx'
 import { formatDate, mergeDetailPatch, normalizeDetail } from '../features/property/detailUtils.js'
-import { readField } from '../features/workspace/utils.js'
+import { readField, verificationBadge } from '../features/workspace/utils.js'
 import { listingService } from '../services/searchService.js'
 import { userService } from '../services/userService.js'
 
@@ -239,6 +239,16 @@ function PropertyDetailPage() {
                 <div className="min-w-0">
                   <h1 className="text-lg font-semibold leading-7 text-ink-900">{detail.title}</h1>
                   {detail.address && <p className="mt-1 text-xs leading-5 text-ink-400">{detail.address}</p>}
+                  {(() => {
+                    const vb = verificationBadge(detail.verified)
+                    return vb ? (
+                      <div className="mt-2">
+                        <Badge tone={vb.tone}>
+                          <span title={vb.title}>{vb.icon} {vb.label}</span>
+                        </Badge>
+                      </div>
+                    ) : null
+                  })()}
                 </div>
                 <button
                   type="button"

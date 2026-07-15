@@ -1,4 +1,4 @@
-# Renti Agent v2 全栈启动脚本
+﻿# Renti Agent v2 全栈启动脚本
 # 用法: powershell -ExecutionPolicy Bypass -File scripts\start-all.ps1
 $ErrorActionPreference = "Continue"
 

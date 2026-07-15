@@ -73,6 +73,7 @@ export function normalizeDetail(rawDetail, listing, listingId) {
     commute: Array.isArray(detail.commute) ? detail.commute : [],
     commuteMap: readField(detail, 'commuteMap', 'commute_map') || null,
     dataSource,
+    verified: readField(detail, 'verified') || readField(source, 'verified') || '',
     sourceLabel:
       dataSource?.provider || readField(source, 'provider') || readField(source, 'source') || '',
   }

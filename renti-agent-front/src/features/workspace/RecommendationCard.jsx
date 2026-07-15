@@ -1,5 +1,5 @@
 import Badge from '../../components/ui/Badge.jsx'
-import { formatDistance, formatPrice, imgSrc } from './utils.js'
+import { formatDistance, formatPrice, imgSrc, verificationBadge } from './utils.js'
 
 /** 推荐房源卡片：图 + 标题 + 价格 + 元信息 + tags/score + 风险提示 + 收藏/详情 */
 function RecommendationCard({ item, active = false, favorite = false, onSelect, onDetail, onToggleFavorite }) {
@@ -10,6 +10,7 @@ function RecommendationCard({ item, active = false, favorite = false, onSelect, 
   ].filter(Boolean)
   const locationText =
     [item.district, item.businessArea, item.community].filter(Boolean).join(' · ') || item.location || ''
+  const verifyBadge = verificationBadge(item.verified)
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -61,7 +62,13 @@ function RecommendationCard({ item, active = false, favorite = false, onSelect, 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <h3 className="truncate text-sm font-semibold text-ink-900">{item.title}</h3>
-            <button
+            <div className="flex shrink-0 items-center gap-1">
+              {verifyBadge && (
+                <Badge tone={verifyBadge.tone} className="shrink-0" >
+                  <span title={verifyBadge.title}>{verifyBadge.icon} {verifyBadge.label}</span>
+                </Badge>
+              )}
+              <button
               type="button"
               onClick={(event) => {
                 event.stopPropagation()
@@ -84,6 +91,7 @@ function RecommendationCard({ item, active = false, favorite = false, onSelect, 
                 />
               </svg>
             </button>
+            </div>
           </div>
           {locationText && <p className="mt-0.5 truncate text-xs text-ink-400">{locationText}</p>}
           <div className="mt-1.5 flex items-baseline justify-between gap-2">

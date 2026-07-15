@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.renti.agent.modules.ingestion.application.CrawlerScheduleService;
 import com.renti.agent.modules.ingestion.application.IngestionService;
+import com.renti.agent.modules.ingestion.application.ListingVerificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +27,7 @@ public class AdminIngestionController {
 
     private final IngestionService ingestionService;
     private final CrawlerScheduleService crawlerScheduleService;
+    private final ListingVerificationService listingVerificationService;
 
     @GetMapping("/overview")
     public Map<String, Object> overview() {
@@ -64,6 +66,20 @@ public class AdminIngestionController {
     @PostMapping("/import")
     public Map<String, Object> importListings(@RequestBody(required = false) Map<String, Object> payload) {
         return ingestionService.importRows(payload == null ? Map.of() : payload);
+    }
+
+    /** 手动触发一批房源官方核验（异步核验器同款逻辑）。 */
+    @PostMapping("/verify-listings")
+    public Map<String, Object> verifyListings(@RequestBody(required = false) Map<String, Object> payload) {
+        int limit = 40;
+        if (payload != null && payload.get("limit") != null) {
+            try {
+                limit = Integer.parseInt(String.valueOf(payload.get("limit")).trim());
+            } catch (NumberFormatException ignored) {
+                limit = 40;
+            }
+        }
+        return listingVerificationService.verifyBatch(limit);
     }
 
     @GetMapping("/crawler-plugins")

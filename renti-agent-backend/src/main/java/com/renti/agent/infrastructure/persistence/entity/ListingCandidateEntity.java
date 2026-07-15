@@ -28,6 +28,7 @@ import org.hibernate.type.SqlTypes;
         @Index(name = "idx_listing_candidates_dedupe", columnList = "dedupe_key", unique = true),
         @Index(name = "idx_listing_candidates_status", columnList = "status,updated_at"),
         @Index(name = "idx_listing_candidates_listing", columnList = "listing_id"),
+        @Index(name = "idx_listing_candidates_fingerprint", columnList = "fingerprint"),
 })
 @Getter
 @Setter
@@ -51,6 +52,10 @@ public class ListingCandidateEntity {
 
     @Column(name = "dedupe_key", nullable = false, length = 128, unique = true)
     private String dedupeKey;
+
+    /** 物理房源指纹（与来源无关）：跨源去重用，同一套房在不同平台指纹一致。 */
+    @Column(name = "fingerprint", length = 64)
+    private String fingerprint;
 
     /** 规范化房源 payload（camelCase 字段，含 raw 原始数据） */
     @JdbcTypeCode(SqlTypes.JSON)
