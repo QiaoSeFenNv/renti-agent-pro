@@ -70,3 +70,7 @@ def _agent_error(exc: Exception) -> dict[str, Any]:
         "code": "agent_error",
         "summary": f"{exc.__class__.__name__}: {str(exc)[:200]}",
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)

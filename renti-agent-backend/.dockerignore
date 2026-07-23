@@ -1,0 +1,15 @@
+target/
+*.log
+.idea/
+*.iml
+.git/
+.gitignore
+README.md
+docs/
+scripts/
+agent-service/.venv/
+agent-service/__pycache__/
+agent-service/**/__pycache__/
+agent-service/.env.local
+.env.local
+*.dump
