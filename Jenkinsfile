@@ -23,12 +23,12 @@ pipeline {
     agent any
 
     environment {
-        // GitHub 命名空间（小写）。ghcr 镜像名必须小写。
-        GHCR_NS    = 'qiao-se-fen-nv'
+        // GitHub 用户名小写 = ghcr 镜像 namespace（ghcr 镜像名必须小写）
+        GHCR_NS    = 'qiaosefennv'
         IMAGE_TAG  = "${env.GIT_COMMIT?.take(12) ?: 'latest'}"
         // 部署目录（挂进 Jenkins 容器的同路径）
         DEPLOY_DIR = '/home/ubuntu/workspace/renti'
-        // ghcr 凭据：credentials() 对 Secret text 返回 (user, psd)
+        // ghcr 凭据：credentials() 对 "Username with password" 类型返回 (user, psd)
         GHCR_PAT   = credentials('ghcr-pat')
         GHCR_USER  = "${GHCR_PAT_USR}"
         GHCR_TOKEN = "${GHCR_PAT_PSW}"
