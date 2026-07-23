@@ -3,19 +3,10 @@
 FROM maven:3.9-eclipse-temurin-21 AS builder
 WORKDIR /build
 
-# 换阿里云 Maven 源（国内 4C4G 上拉依赖快很多）
-RUN mkdir -p /root/.m2 && cat > /root/.m2/settings.xml <<'XML'
-<settings>
-  <mirrors>
-    <mirror>
-      <id>aliyun</id>
-      <mirrorOf>central</mirrorOf>
-      <name>Aliyun Central</name>
-      <url>https://maven.aliyun.com/repository/public</url>
-    </mirror>
-  </mirrors>
-</settings>
-XML
+# 换阿里云 Maven 源（国内 4C4G 上拉依赖快很多）。用 echo 写 settings.xml，兼容 legacy builder。
+RUN mkdir -p /root/.m2 && \
+    echo '<settings><mirrors><mirror><id>aliyun</id><mirrorOf>central</mirrorOf><name>Aliyun Central</name><url>https://maven.aliyun.com/repository/public</url></mirror></mirrors></settings>' \
+      > /root/.m2/settings.xml
 
 # 先拷 pom，利用层缓存拉依赖（4C4G 首次慢，增量构建快）。
 COPY pom.xml .
