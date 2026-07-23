@@ -36,7 +36,6 @@ pipeline {
 
     options {
         timestamps()
-        ansiColor('xterm')
         // 构建可能在 4C4G 上较慢，给足超时
         timeout(time: 60, unit: 'MINUTES')
         buildDiscarder(logRotator(numToKeepStr: '20'))
