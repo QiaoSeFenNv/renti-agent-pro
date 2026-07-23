@@ -30,7 +30,7 @@ services:
       - renti-network
 
   agent-service:
-    image: ghcr.io/qiao-se-fen-nv/renti-agent-service:${IMAGE_TAG:-latest}
+    image: ghcr.io/qiaosefennv/renti-agent-service:${IMAGE_TAG:-latest}
     container_name: renti-agent-service
     restart: unless-stopped
     environment:
@@ -60,7 +60,7 @@ services:
       - renti-network
 
   backend:
-    image: ghcr.io/qiao-se-fen-nv/renti-agent-backend:${IMAGE_TAG:-latest}
+    image: ghcr.io/qiaosefennv/renti-agent-backend:${IMAGE_TAG:-latest}
     container_name: renti-backend
     restart: unless-stopped
     environment:
@@ -108,7 +108,7 @@ services:
       - renti-network
 
   front:
-    image: ghcr.io/qiao-se-fen-nv/renti-agent-front:${IMAGE_TAG:-latest}
+    image: ghcr.io/qiaosefennv/renti-agent-front:${IMAGE_TAG:-latest}
     container_name: renti-front
     restart: unless-stopped
     depends_on:
