@@ -129,8 +129,8 @@ services:
       - "80:80"
       - "443:443"
     volumes:
+      # 只挂配置；html 由 front 容器提供（nginx 反代到 front）
       - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/html:/usr/share/nginx/html
     depends_on:
       - front
       - backend
