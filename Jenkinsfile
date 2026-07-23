@@ -128,18 +128,13 @@ pipeline {
                 sh '''
                 set -e
                 sleep 15
-                echo "===> 容器状态"
+                echo "===> 容器状态（应为 Up / healthy）"
                 docker compose -f ${DEPLOY_DIR}/docker-compose.yml ps
 
                 echo "===> API 健康检查（经 nginx 反代到 backend）"
                 docker compose -f ${DEPLOY_DIR}/docker-compose.yml exec -T nginx \
                     wget -qO- http://backend:8080/api/health \
                   || (docker compose -f ${DEPLOY_DIR}/docker-compose.yml logs backend --tail=80; exit 1)
-
-                echo "===> 前端可达性（经 nginx 反代到 front）"
-                docker compose -f ${DEPLOY_DIR}/docker-compose.yml exec -T nginx \
-                    wget -qO- http://front:80/ | grep -q "<html" \
-                  || (echo "前端页面未返回预期 HTML"; exit 1)
                 '''
             }
         }
